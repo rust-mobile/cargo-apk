@@ -7,8 +7,8 @@ description = "Utilities for building Android binaries"
 license = "MIT OR Apache-2.0"
 keywords = ["android", "ndk", "apk"]
 documentation = "https://docs.rs/ndk-build"
-homepage = "https://github.com/rust-windowing/android-ndk-rs"
-repository = "https://github.com/rust-windowing/android-ndk-rs"
+homepage = "https://github.com/rust-mobile/cargo-apk"
+repository = "https://github.com/rust-mobile/cargo-apk"
 rust-version = "1.60"
 
 [dependencies]
