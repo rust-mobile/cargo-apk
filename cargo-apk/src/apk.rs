@@ -333,7 +333,7 @@ impl<'a> ApkBuilder<'a> {
 
         let target_dir = self.build_dir.join(artifact);
         self.ndk.ndk_gdb(
-            &target_dir,
+            target_dir,
             "android.app.NativeActivity",
             self.device_serial.as_deref(),
         )?;
