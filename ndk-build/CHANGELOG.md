@@ -1,5 +1,7 @@
 # Unreleased
 
+- Add `android:extractNativeLibs`, `android:usesCleartextTraffic`, attributes to the manifest's `Application` element, and `android:alwaysRetainTaskState` to the `Activity` element.
+
 # 0.9.0 (2022-11-23)
 
 - Add `ndk::DEFAULT_DEV_KEYSTORE_PASSWORD` and make `apk::ApkConfig::apk` public. ([#358](https://github.com/rust-windowing/android-ndk-rs/pull/358))
