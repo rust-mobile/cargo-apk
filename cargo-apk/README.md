@@ -151,6 +151,12 @@ icon = "@mipmap/ic_launcher"
 # Defaults to the compiled artifact's name.
 label = "Application Name"
 
+# See https://developer.android.com/guide/topics/manifest/application-element#extractNativeLibs
+extract_native_libs = true
+
+# See https://developer.android.com/guide/topics/manifest/application-element#usesCleartextTraffic
+uses_cleartext_traffic = true
+
 # See https://developer.android.com/guide/topics/manifest/meta-data-element
 #
 # Note: there can be several .meta_data entries.
@@ -191,6 +197,9 @@ exported = true
 #
 # Defaults to true on Android >= 24, no effect on earlier API levels
 resizeable_activity = false
+
+# See https://developer.android.com/guide/topics/manifest/activity-element#always
+always_retain_task_state = true
 
 # See https://developer.android.com/guide/topics/manifest/meta-data-element
 #

@@ -77,6 +77,10 @@ pub struct Application {
     #[serde(rename(serialize = "android:label"))]
     #[serde(default)]
     pub label: String,
+    #[serde(rename(serialize = "android:extractNativeLibs"))]
+    pub extract_native_libs: Option<bool>,
+    #[serde(rename(serialize = "android:usesCleartextTraffic"))]
+    pub uses_cleartext_traffic: Option<bool>,
 
     #[serde(rename(serialize = "meta-data"))]
     #[serde(default)]
@@ -104,6 +108,8 @@ pub struct Activity {
     pub exported: Option<bool>,
     #[serde(rename(serialize = "android:resizeableActivity"))]
     pub resizeable_activity: Option<bool>,
+    #[serde(rename(serialize = "android:alwaysRetainTaskState"))]
+    pub always_retain_task_state: Option<bool>,
 
     #[serde(rename(serialize = "meta-data"))]
     #[serde(default)]
@@ -124,6 +130,7 @@ impl Default for Activity {
             orientation: None,
             exported: None,
             resizeable_activity: None,
+            always_retain_task_state: None,
             meta_data: Default::default(),
             intent_filter: Default::default(),
         }
