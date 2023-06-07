@@ -129,6 +129,15 @@ fn split_apk_and_cargo_args(input: Vec<String>) -> (Args, Vec<String>) {
     (args, split_args.cargo_args)
 }
 
+fn iterator_single_item<T>(mut iter: impl Iterator<Item = T>) -> Option<T> {
+    let first_item = iter.next()?;
+    if iter.next().is_some() {
+        None
+    } else {
+        Some(first_item)
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     env_logger::init();
     let Cmd {
@@ -160,14 +169,14 @@ fn main() -> anyhow::Result<()> {
         ApkSubCmd::Run { args, no_logcat } => {
             let cmd = Subcommand::new(args.subcommand_args)?;
             let builder = ApkBuilder::from_subcommand(&cmd, args.device)?;
-            anyhow::ensure!(cmd.artifacts().len() == 1, Error::invalid_args());
-            builder.run(&cmd.artifacts()[0], no_logcat)?;
+            let artifact = iterator_single_item(cmd.artifacts()).ok_or(Error::invalid_args())?;
+            builder.run(artifact, no_logcat)?;
         }
         ApkSubCmd::Gdb { args } => {
             let cmd = Subcommand::new(args.subcommand_args)?;
             let builder = ApkBuilder::from_subcommand(&cmd, args.device)?;
-            anyhow::ensure!(cmd.artifacts().len() == 1, Error::invalid_args());
-            builder.gdb(&cmd.artifacts()[0])?;
+            let artifact = iterator_single_item(cmd.artifacts()).ok_or(Error::invalid_args())?;
+            builder.gdb(artifact)?;
         }
         ApkSubCmd::Version => {
             println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
