@@ -9,7 +9,7 @@ keywords = ["android", "ndk", "apk"]
 documentation = "https://docs.rs/cargo-apk"
 homepage = "https://github.com/rust-mobile/cargo-apk"
 repository = "https://github.com/rust-mobile/cargo-apk"
-rust-version = "1.60"
+rust-version = "1.64"
 
 [dependencies]
 anyhow = "1.0.57"
