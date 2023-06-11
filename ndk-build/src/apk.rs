@@ -128,7 +128,12 @@ impl<'a> UnalignedApk<'a> {
 
         match self.config.strip {
             StripConfig::Default => {
-                std::fs::copy(path, out)?;
+                // This is not std::fs::copy because don't want to copy permission bits
+                // For example, when copying from nix store
+                std::io::copy(
+                    &mut std::io::BufReader::new(std::fs::File::open(path)?),
+                    &mut std::io::BufWriter::new(std::fs::File::create(out)?),
+                )?;
             }
             StripConfig::Strip | StripConfig::Split => {
                 let obj_copy = self.config.ndk.toolchain_bin("objcopy", target)?;
