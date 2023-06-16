@@ -228,7 +228,8 @@ impl<'a> ApkBuilder<'a> {
                 self.min_sdk_version(),
                 self.cmd.target_dir(),
             )?;
-            cargo.arg("build");
+            cargo.arg("rustc");
+            cargo.arg("--crate-type=cdylib");
             if self.cmd.target().is_none() {
                 cargo.arg("--target").arg(triple);
             }
