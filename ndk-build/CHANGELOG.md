@@ -1,5 +1,7 @@
 # Unreleased
 
+- Enable building from `android` host ([#29](https://github.com/rust-mobile/cargo-apk/pull/29))
+
 # 0.9.0 (2022-11-23)
 
 - Add `ndk::DEFAULT_DEV_KEYSTORE_PASSWORD` and make `apk::ApkConfig::apk` public. ([#358](https://github.com/rust-windowing/android-ndk-rs/pull/358))
