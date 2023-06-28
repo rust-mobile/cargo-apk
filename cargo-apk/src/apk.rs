@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::manifest::{Inheritable, Manifest, Root};
-use cargo_subcommand::{Artifact, CrateType, Profile, Subcommand};
+use cargo_subcommand::{Artifact, ArtifactType, CrateType, Profile, Subcommand};
 use ndk_build::apk::{Apk, ApkConfig};
 use ndk_build::cargo::{cargo_ndk, VersionCode};
 use ndk_build::dylibs::get_libs_search_paths;
@@ -162,19 +162,21 @@ impl<'a> ApkBuilder<'a> {
         let mut manifest = self.manifest.android_manifest.clone();
 
         if manifest.package.is_empty() {
-            manifest.package = match artifact {
-                Artifact::Root(name) => format!("rust.{}", name.replace('-', "_")),
-                Artifact::Example(name) => format!("rust.example.{}", name.replace('-', "_")),
+            let name = artifact.name.replace('-', "_");
+            manifest.package = match artifact.r#type {
+                ArtifactType::Lib => format!("rust.{}", name),
+                ArtifactType::Bin => format!("rust.{}", name),
+                ArtifactType::Example => format!("rust.example.{}", name),
             };
         }
 
         if manifest.application.label.is_empty() {
-            manifest.application.label = artifact.name().to_string();
+            manifest.application.label = artifact.name.to_string();
         }
 
         manifest.application.activity.meta_data.push(MetaData {
             name: "android.app.lib_name".to_string(),
-            value: artifact.name().replace('-', "_"),
+            value: artifact.name.replace('-', "_"),
         });
 
         let crate_path = self.cmd.manifest().parent().expect("invalid manifest path");
@@ -200,11 +202,11 @@ impl<'a> ApkBuilder<'a> {
             .manifest
             .apk_name
             .clone()
-            .unwrap_or_else(|| artifact.name().to_string());
+            .unwrap_or_else(|| artifact.name.to_string());
 
         let config = ApkConfig {
             ndk: self.ndk.clone(),
-            build_dir: self.build_dir.join(artifact),
+            build_dir: self.build_dir.join(artifact.build_dir()),
             apk_name,
             assets,
             resources,
@@ -331,7 +333,7 @@ impl<'a> ApkBuilder<'a> {
         let apk = self.build(artifact)?;
         apk.install(self.device_serial.as_deref())?;
 
-        let target_dir = self.build_dir.join(artifact);
+        let target_dir = self.build_dir.join(artifact.build_dir());
         self.ndk.ndk_gdb(
             target_dir,
             "android.app.NativeActivity",

@@ -5,11 +5,13 @@ Tool for creating Android packages.
 ## Installation
 
 From crates.io:
+
 ```console
 $ cargo install cargo-apk
 ```
 
 From source:
+
 ```console
 $ cargo install --path .
 ```
@@ -80,7 +82,7 @@ runtime_libs = "path/to/libs_folder"
 # and keystore password respectively. The profile portion follows the same rules
 # as `<cfg>`, it is the uppercased profile name with `-` replaced with `_`.
 #
-# If present they take precedence over the signing information in the manifest. 
+# If present they take precedence over the signing information in the manifest.
 [package.metadata.android.signing.<profile>]
 path = "relative/or/absolute/path/to/my.keystore"
 keystore_password = "android"
