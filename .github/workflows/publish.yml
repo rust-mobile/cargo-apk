@@ -18,14 +18,6 @@ jobs:
           - { name: "cargo-apk", target: "x86_64-unknown-linux-gnu" }
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.crate.target }}
-          override: true
       - name: Publish ${{ matrix.crate.name }}
-        uses: actions-rs/cargo@v1
         continue-on-error: true
-        with:
-          command: publish
-          args: --manifest-path ${{ matrix.crate.name }}/Cargo.toml --target ${{ matrix.crate.target }} --token ${{ secrets.cratesio_token }}
+        run: cargo publish --manifest-path ${{ matrix.crate.name }}/Cargo.toml --target ${{ matrix.crate.target }} --token ${{ secrets.cratesio_token }}
