@@ -239,12 +239,16 @@ impl Ndk {
             "darwin"
         } else if host_contains("windows") {
             "windows"
+        } else if host_contains("android") {
+            "android"
         } else if cfg!(target_os = "linux") {
             "linux"
         } else if cfg!(target_os = "macos") {
             "darwin"
         } else if cfg!(target_os = "windows") {
             "windows"
+        } else if cfg!(target_os = "android") {
+            "android"
         } else {
             return match host_os {
                 Some(host_os) => Err(NdkError::UnsupportedHost(host_os)),

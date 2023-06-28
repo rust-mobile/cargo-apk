@@ -16,7 +16,7 @@ else
     adb shell am start -a android.intent.action.MAIN -n "rust.example.hello_world/android.app.NativeActivity"
 fi
 
-sleep 30s
+sleep 30
 
 adb logcat *:E hello_world:V -d | tee ~/logcat.log
 

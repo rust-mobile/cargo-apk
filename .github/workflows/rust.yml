@@ -6,97 +6,80 @@ jobs:
   formatting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-    - name: Format
-      uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: --all -- --check
+      - uses: actions/checkout@v2
+      - name: Format
+        run: cargo fmt --all -- --check
 
   clippy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-        target: aarch64-linux-android
-    - name: Clippy
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
+      - uses: actions/checkout@v2
+      - name: Install aarch64-linux-android Rust target
+        run: rustup target add aarch64-linux-android
+      - name: Clippy
         # Use one of our supported targets to lint all crates including
         # the target-specific `ndk` in one go.
         # This assumes our host-tools (cargo-apk and dependencies)
         # also compile cleanly under this target.
-        args: --all --all-targets --all-features --target aarch64-linux-android -- -Dwarnings
+        run: cargo clippy --all --all-targets --all-features --target aarch64-linux-android -- -Dwarnings
 
   check_msrv:
-    name: Check MSRV (1.60.0)
+    name: Check MSRV (1.64.0)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: dtolnay/rust-toolchain@1.60.0
+      - uses: dtolnay/rust-toolchain@1.64.0
         with:
           target: aarch64-linux-android
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          # See comment above about using one of our supported targets.
-          args: --workspace --all-targets --all-features --target aarch64-linux-android
+      - name: Check
+        # See comment above about using one of our supported targets.
+        run: cargo check --workspace --all-targets --all-features --target aarch64-linux-android
 
   build:
     strategy:
       fail-fast: false
       matrix:
-        os:  [ubuntu-latest]
-        rust-channel: ['stable', 'nightly']
+        os: [ubuntu-latest]
+        rust-channel: ["stable", "nightly"]
         rust-target:
-          - 'armv7-linux-androideabi'
-          - 'aarch64-linux-android'
-          - 'i686-linux-android'
-          - 'x86_64-linux-android'
+          - "armv7-linux-androideabi"
+          - "aarch64-linux-android"
+          - "i686-linux-android"
+          - "x86_64-linux-android"
         include:
           - os: windows-latest
-            rust-channel: 'stable'
-            rust-target: 'aarch64-linux-android'
+            rust-channel: "stable"
+            rust-target: "aarch64-linux-android"
           - os: windows-latest
-            rust-channel: 'stable'
-            rust-target: 'x86_64-linux-android'
+            rust-channel: "stable"
+            rust-target: "x86_64-linux-android"
 
     runs-on: ${{ matrix.os }}
     name: Build apk
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Installing Rust ${{ matrix.rust-channel }} w/ ${{ matrix.rust-target }}
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust-channel }}
-        target: ${{ matrix.rust-target }}
-        override: true
+      - name: Installing Rust ${{ matrix.rust-channel }} w/ ${{ matrix.rust-target }}
+        run: |
+          rustup toolchain install ${{ matrix.rust-channel }}
+          rustup default ${{ matrix.rust-channel }}
+          rustup target add ${{ matrix.rust-target }}
 
-    - name: Install cargo-apk
-      run:
-        cargo install --path cargo-apk
+      - name: Install cargo-apk
+        run: cargo install --path cargo-apk
 
-    - name: Cargo apk build for target ${{ matrix.rust-target }}
-      run: cargo apk build -p examples --target ${{ matrix.rust-target }} --examples
+      - name: Cargo apk build for target ${{ matrix.rust-target }}
+        run: cargo apk build -p examples --target ${{ matrix.rust-target }} --examples
 
-    - uses: actions/upload-artifact@v2
-      # Only need this for CI, unless users are interested in downloading
-      # a ready-made app that does nothing but printing "hello world".
-      if: ${{ matrix.rust-target == 'x86_64-linux-android' }}
-      name: Upload hello_world apk
-      with:
-        name: hello_world_${{ matrix.os }}_${{ matrix.rust-target }}
-        path: ./target/debug/apk/examples/hello_world.apk
+      - uses: actions/upload-artifact@v2
+        # Only need this for CI, unless users are interested in downloading
+        # a ready-made app that does nothing but printing "hello world".
+        if: ${{ matrix.rust-target == 'x86_64-linux-android' }}
+        name: Upload hello_world apk
+        with:
+          name: hello_world_${{ matrix.os }}_${{ matrix.rust-target }}
+          path: ./target/debug/apk/examples/hello_world.apk
 
   android_emulator:
     name: hello_world example on emulator
@@ -114,112 +97,107 @@ jobs:
       profile: Nexus 6
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - uses: actions/download-artifact@v2
-      name: Download hello_world APK
-      if: ${{ matrix.source_os != 'local' }}
-      id: download
-      with:
-        name: hello_world_${{ matrix.source_os }}_x86_64-linux-android
+      - uses: actions/download-artifact@v2
+        name: Download hello_world APK
+        if: ${{ matrix.source_os != 'local' }}
+        id: download
+        with:
+          name: hello_world_${{ matrix.source_os }}_x86_64-linux-android
 
-    - name: Install `cargo-apk` and add `x86_64-linux-android` target
-      if: ${{ matrix.source_os == 'local' }}
-      run: |
-        cargo install --path cargo-apk
-        rustup target add x86_64-linux-android
+      - name: Install `cargo-apk` and add `x86_64-linux-android` target
+        if: ${{ matrix.source_os == 'local' }}
+        run: |
+          cargo install --path cargo-apk
+          rustup target add x86_64-linux-android
 
-    - name: AVD cache
-      uses: actions/cache@v2
-      id: avd-cache
-      with:
-        path: |
-          ~/.android/avd/*
-          ~/.android/adb*
-        # Bump the trailing number when making changes to the emulator setup below
-        key: avd-${{ env.api-level }}-1
+      - name: AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          # Bump the trailing number when making changes to the emulator setup below
+          key: avd-${{ env.api-level }}-1
 
-    - name: create AVD and generate snapshot for caching
-      if: steps.avd-cache.outputs.cache-hit != 'true'
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: ${{ env.api-level }}
-        arch: ${{ env.arch }}
-        target: ${{ env.target }}
-        profile: ${{ env.profile }}
-        emulator-options: ${{ env.emulator-options }}
-        disable-animations: true
-        force-avd-creation: false
-        script: echo "Generated AVD snapshot for caching."
+      - name: create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.api-level }}
+          arch: ${{ env.arch }}
+          target: ${{ env.target }}
+          profile: ${{ env.profile }}
+          emulator-options: ${{ env.emulator-options }}
+          disable-animations: true
+          force-avd-creation: false
+          script: echo "Generated AVD snapshot for caching."
 
-    - name: Start hello_world example
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: ${{ env.api-level }}
-        arch: ${{ env.arch }}
-        target: ${{ env.target }}
-        profile: ${{ env.profile }}
-        emulator-options: -no-snapshot-save ${{ env.emulator-options }}
-        disable-animations: true
-        force-avd-creation: false
-        script: ./.github/workflows/android_test.sh "${{ steps.download.outputs.download-path }}"
+      - name: Start hello_world example
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.api-level }}
+          arch: ${{ env.arch }}
+          target: ${{ env.target }}
+          profile: ${{ env.profile }}
+          emulator-options: -no-snapshot-save ${{ env.emulator-options }}
+          disable-animations: true
+          force-avd-creation: false
+          script: ./.github/workflows/android_test.sh "${{ steps.download.outputs.download-path }}"
 
-    - name: Upload emulator logs
-      uses: actions/upload-artifact@v2
-      if: ${{ always() }}
-      with:
-        name: log
-        path: ~/logcat.log
+      - name: Upload emulator logs
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: log
+          path: ~/logcat.log
 
   build-host:
     strategy:
       fail-fast: false
       matrix:
-        os:  [ubuntu-latest]
-        rust-channel: ['stable', 'nightly']
+        os: [ubuntu-latest]
+        rust-channel: ["stable", "nightly"]
 
     runs-on: ${{ matrix.os }}
     name: Host-side tests
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Installing Rust ${{ matrix.rust-channel }}
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust-channel }}
-        override: true
+      - name: Installing Rust ${{ matrix.rust-channel }}
+        run: |
+          rustup toolchain install ${{ matrix.rust-channel }}
+          rustup default ${{ matrix.rust-channel }}
 
-    - name: Test ndk-build
-      run:
-        cargo test -p ndk-build --all-features
+      - name: Test ndk-build
+        run: cargo test -p ndk-build --all-features
 
-    - name: Test cargo-apk
-      run:
-        cargo test -p cargo-apk --all-features
+      - name: Test cargo-apk
+        run: cargo test -p cargo-apk --all-features
 
   docs:
     strategy:
       fail-fast: false
       matrix:
-        os:  [ubuntu-latest]
-        rust-channel: ['stable', 'nightly']
+        os: [ubuntu-latest]
+        rust-channel: ["stable", "nightly"]
 
     runs-on: ${{ matrix.os }}
     name: Build-test docs
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Installing Rust ${{ matrix.rust-channel }}
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust-channel }}
-        override: true
+      - name: Installing Rust ${{ matrix.rust-channel }}
+        run: |
+          rustup toolchain install ${{ matrix.rust-channel }}
+          rustup default ${{ matrix.rust-channel }}
 
-    - name: Document all crates
-      env:
-        RUSTDOCFLAGS: -Dwarnings
-      run:
-        cargo doc --all --all-features
+      - name: Document all crates
+        env:
+          RUSTDOCFLAGS: -Dwarnings
+        run: cargo doc --all --all-features
