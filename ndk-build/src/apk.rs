@@ -292,37 +292,52 @@ impl Apk {
         Ok(())
     }
 
-    pub fn start(&self, device_serial: Option<&str>) -> Result<u32, NdkError> {
-        let mut am_start = self.ndk.adb(device_serial)?;
-        am_start
-            .arg("shell")
+    pub fn start(&self, device_serial: Option<&str>) -> Result<(), NdkError> {
+        let mut adb = self.ndk.adb(device_serial)?;
+        adb.arg("shell")
             .arg("am")
             .arg("start")
-            .arg("-W")
             .arg("-a")
             .arg("android.intent.action.MAIN")
             .arg("-n")
-            .arg(format!("{}/android.app.NativeActivity", &self.package_name));
-        if !am_start.status()?.success() {
-            return Err(NdkError::CmdFailed(am_start));
+            .arg(format!("{}/android.app.NativeActivity", self.package_name));
+
+        if !adb.status()?.success() {
+            return Err(NdkError::CmdFailed(adb));
         }
 
-        let pid_vec = self
-            .ndk
-            .adb(device_serial)?
-            .arg("shell")
-            .arg("pidof")
-            .arg(&self.package_name)
-            .output()?
-            .stdout;
+        Ok(())
+    }
 
-        let pid = std::str::from_utf8(&pid_vec).unwrap().trim();
-        let pid: u32 = pid
-            .parse()
-            .map_err(|e| NdkError::NotAPid(e, pid.to_owned()))?;
+    pub fn uidof(&self, device_serial: Option<&str>) -> Result<u32, NdkError> {
+        let mut adb = self.ndk.adb(device_serial)?;
+        adb.arg("shell")
+            .arg("pm")
+            .arg("list")
+            .arg("package")
+            .arg("-U")
+            .arg(&self.package_name);
+        let output = adb.output()?;
 
-        println!("Launched with PID {}", pid);
+        if !output.status.success() {
+            return Err(NdkError::CmdFailed(adb));
+        }
 
-        Ok(pid)
+        let output = std::str::from_utf8(&output.stdout).unwrap();
+        let (_package, uid) = output
+            .lines()
+            .filter_map(|line| line.split_once(' '))
+            // `pm list package` uses the id as a substring filter; make sure
+            // we select the right package in case it returns multiple matches:
+            .find(|(package, _uid)| package.strip_prefix("package:") == Some(&self.package_name))
+            .ok_or(NdkError::PackageNotInOutput {
+                package: self.package_name.clone(),
+                output: output.to_owned(),
+            })?;
+        let uid = uid
+            .strip_prefix("uid:")
+            .ok_or(NdkError::UidNotInOutput(output.to_owned()))?;
+        uid.parse()
+            .map_err(|e| NdkError::NotAUid(e, uid.to_owned()))
     }
 }
