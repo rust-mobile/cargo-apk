@@ -1,5 +1,15 @@
 # cargo apk
 
+[![Actions Status](https://github.com/rust-mobile/cargo-apk/actions/workflows/rust.yml/badge.svg)](https://github.com/rust-mobile/cargo-apk/actions)
+[![Latest version](https://img.shields.io/crates/v/cargo-apk.svg?logo=rust)](https://crates.io/crates/cargo-apk)
+[![Documentation](https://docs.rs/cargo-apk/badge.svg)](https://docs.rs/cargo-apk)
+[![Lines of code](https://tokei.rs/b1/github/rust-mobile/cargo-apk)](https://github.com/rust-mobile/cargo-apk)
+![MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)
+
+> **Warning**
+> This tool is deprecated in favour of [`xbuild`](https://github.com/rust-mobile/xbuild).
+
 Tool for creating Android packages.
 
 ## Installation
@@ -13,7 +23,7 @@ $ cargo install cargo-apk
 From source:
 
 ```console
-$ cargo install --path .
+$ cargo install --path cargo-apk/
 ```
 
 ## Commands
