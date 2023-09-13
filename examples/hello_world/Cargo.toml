@@ -1,0 +1,44 @@
+[package.metadata.android]
+# Specifies the package property of the manifest.
+package = "rust.hello_world"
+
+# Specifies the array of targets to build for.
+build_targets = [ "armv7-linux-androideabi", "aarch64-linux-android", "x86_64-linux-android" ]
+#build_targets = [ "armv7-linux-androideabi" ]
+
+# Path to your application's resources folder.
+# If not specified, resources will not be included in the APK.
+#resources = "path/to/resources_folder"
+
+# Path to the folder containing your application's assets.
+# If not specified, assets will not be included in the APK.
+#assets = "path/to/assets_folder"
+
+# Name for final APK file.
+# Defaults to package name.
+apk_name = "hello_world"
+
+[package.metadata.android.sdk]
+min_sdk_version = 26
+target_sdk_version = 29
+
+[package]
+name = "hello_world"
+version = "0.1.0"
+edition = "2021"
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.20"
+libc = "0.2"
+log = "0.4.14"
+ndk = { version = "0.7", features = ["api-level-23"] }
+ndk-context = "0.1.1"
+android_logger = "0.11.0"
+android-activity = { version = "0.4", features = ["native-activity"] }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "hello_world"
+crate-type = ["cdylib"]
+
+[dependencies]
