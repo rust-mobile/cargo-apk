@@ -8,7 +8,7 @@ use thiserror::Error;
 pub enum NdkError {
     #[error(
         "Android SDK is not found. \
-    Please set the path to the Android SDK with the $ANDROID_SDK_ROOT \
+    Please set the path to the Android SDK with the $ANDROID_HOME \
     environment variable."
     )]
     SdkNotFound,
