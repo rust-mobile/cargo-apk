@@ -81,6 +81,14 @@ strip = "default"
 # according to the specified build_targets.
 runtime_libs = "path/to/libs_folder"
 
+# The name of a Linux user ID that is shared with other apps. By
+# default, Android assigns each app its own unique user ID. However, if
+# this attribute is set to the same value for two or more apps, they all
+# share the same ID, provided that their certificate sets are identical.
+# Apps with the same user ID can access each other's data and, if
+# desired, run in the same process.
+shared_user_id = "my.shared.user.id"
+
 # Defaults to `$HOME/.android/debug.keystore` for the `dev` profile. Will ONLY
 # generate a new debug.keystore if this file does NOT exist. A keystore is never
 # auto-generated for other profiles.
