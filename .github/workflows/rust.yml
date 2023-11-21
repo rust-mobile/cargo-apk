@@ -24,11 +24,11 @@ jobs:
         run: cargo clippy --all --all-targets --all-features --target aarch64-linux-android -- -Dwarnings
 
   check_msrv:
-    name: Check MSRV (1.64.0)
+    name: Check MSRV (1.70.0)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: dtolnay/rust-toolchain@1.64.0
+      - uses: dtolnay/rust-toolchain@1.70.0
         with:
           target: aarch64-linux-android
       - name: Check

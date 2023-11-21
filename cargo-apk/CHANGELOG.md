@@ -1,5 +1,7 @@
 # Unreleased
 
+- Bump MSRV to 1.70 to reflect dependency updates.
+
 # 0.9.7 (2022-12-12)
 
 - Reimplement default package selection based on `$PWD` or `--manifest-path` by upgrading to [`cargo-subcommand 0.11.0`](https://github.com/rust-mobile/cargo-subcommand/releases/tag/0.11.0). ([#4](https://github.com/rust-mobile/cargo-apk/pull/4))
