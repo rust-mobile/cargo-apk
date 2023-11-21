@@ -17,7 +17,7 @@ jobs:
           - { name: "ndk-build", target: "x86_64-unknown-linux-gnu" }
           - { name: "cargo-apk", target: "x86_64-unknown-linux-gnu" }
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Publish ${{ matrix.crate.name }}
         continue-on-error: true
         run: cargo publish --manifest-path ${{ matrix.crate.name }}/Cargo.toml --target ${{ matrix.crate.target }} --token ${{ secrets.cratesio_token }}
