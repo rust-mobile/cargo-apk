@@ -6,14 +6,14 @@ jobs:
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Format
         run: cargo fmt --all -- --check
 
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install aarch64-linux-android Rust target
         run: rustup target add aarch64-linux-android
       - name: Clippy
@@ -27,7 +27,7 @@ jobs:
     name: Check MSRV (1.70.0)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.70.0
         with:
           target: aarch64-linux-android
@@ -58,7 +58,7 @@ jobs:
     name: Build apk
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Installing Rust ${{ matrix.rust-channel }} w/ ${{ matrix.rust-target }}
         run: |
@@ -98,7 +98,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v2
         name: Download hello_world APK
@@ -166,7 +166,7 @@ jobs:
     name: Host-side tests
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Installing Rust ${{ matrix.rust-channel }}
         run: |
@@ -190,7 +190,7 @@ jobs:
     name: Build-test docs
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Installing Rust ${{ matrix.rust-channel }}
         run: |
