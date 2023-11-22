@@ -313,7 +313,8 @@ impl<'a> ApkBuilder<'a> {
         let apk = self.build(artifact)?;
         apk.reverse_port_forwarding(self.device_serial.as_deref())?;
         apk.install(self.device_serial.as_deref())?;
-        let pid = apk.start(self.device_serial.as_deref())?;
+        apk.start(self.device_serial.as_deref())?;
+        let uid = apk.uidof(self.device_serial.as_deref())?;
 
         if !no_logcat {
             self.ndk
@@ -321,8 +322,8 @@ impl<'a> ApkBuilder<'a> {
                 .arg("logcat")
                 .arg("-v")
                 .arg("color")
-                .arg("--pid")
-                .arg(pid.to_string())
+                .arg("--uid")
+                .arg(uid.to_string())
                 .status()?;
         }
 

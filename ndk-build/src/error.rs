@@ -48,6 +48,10 @@ pub enum NdkError {
     CmdFailed(Command),
     #[error(transparent)]
     Serialize(#[from] quick_xml::de::DeError),
-    #[error("String `{1}` is not a PID")]
-    NotAPid(#[source] ParseIntError, String),
+    #[error("String `{1}` is not a UID")]
+    NotAUid(#[source] ParseIntError, String),
+    #[error("Could not find `package:{package}` in output `{output}`")]
+    PackageNotInOutput { package: String, output: String },
+    #[error("Could not find `uid:` in output `{0}`")]
+    UidNotInOutput(String),
 }
