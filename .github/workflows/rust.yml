@@ -114,7 +114,7 @@ jobs:
           rustup target add x86_64-linux-android
 
       - name: AVD cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: avd-cache
         with:
           path: |
