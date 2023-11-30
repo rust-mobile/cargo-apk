@@ -1,6 +1,13 @@
 # Unreleased
 
+# 0.10.0 (2023-11-30)
+
 - Bump MSRV to 1.70 to reflect dependency updates.
+- Bump `ndk-build` to [`0.10.0`](https://github.com/rust-mobile/cargo-apk/releases/tag/ndk-build-0.10.0) with various fixes:
+  - Improved log filtering based on UID instead of PID;
+  - Support for building APKs from an Android host;
+  - More manifest attributes are now supported on the `Application` and `Activity` elements.
+- Improved artifacts based on https://github.com/rust-mobile/cargo-subcommand/pull/17 to support renames of `[lib]`, `[[bin]]` and `[[example]]`. ([#26](https://github.com/rust-mobile/cargo-apk/pull/26))
 
 # 0.9.7 (2022-12-12)
 
