@@ -8,7 +8,7 @@
 ![MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)
 
-> **Warning**
+> [!CAUTION]
 > This tool is deprecated in favour of [`xbuild`](https://github.com/rust-mobile/xbuild).
 
 Tool for creating Android packages.

@@ -7,7 +7,7 @@
 ![MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)
 
-> **Warning**
+> [!CAUTION]
 > This crate and `cargo-apk` are deprecated in favour of [`xbuild`](https://github.com/rust-mobile/xbuild).
 
 Helps [`cargo-apk`](https://crates.io/crates/cargo-apk) cross-compile libraries and package APKs in a generic, reusable Rust crate.
