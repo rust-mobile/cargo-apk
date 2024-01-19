@@ -11,7 +11,7 @@ libc = "0.2"
 log = "0.4.14"
 ndk = { version = "0.7", features = ["api-level-23"] }
 ndk-context = "0.1.1"
-android_logger = "0.11.0"
+android_logger = "0.13.3"
 android-activity = { version = "0.4", features = ["native-activity"] }
 
 [[example]]
