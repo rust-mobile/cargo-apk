@@ -12,7 +12,7 @@ repository = "https://github.com/rust-mobile/cargo-apk"
 rust-version = "1.60"
 
 [dependencies]
-dirs = "4"
+dirs = "5"
 dunce = "1"
 quick-xml = { version = "0.26", features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
