@@ -49,8 +49,8 @@ impl<'a> ApkBuilder<'a> {
             .join("apk");
 
         let package_version = match &manifest.version {
-            Inheritable::Value(v) => v.clone(),
-            Inheritable::Inherited { workspace: true } => {
+            Some(Inheritable::Value(v)) => v.clone(),
+            Some(Inheritable::Inherited { workspace: true }) => {
                 let workspace = workspace_manifest
                     .ok_or(Error::InheritanceMissingWorkspace)?
                     .workspace
@@ -69,7 +69,8 @@ impl<'a> ApkBuilder<'a> {
                     .version
                     .ok_or(Error::WorkspaceMissingInheritedField("package.version"))?
             }
-            Inheritable::Inherited { workspace: false } => return Err(Error::InheritedFalse),
+            Some(Inheritable::Inherited { workspace: false }) => return Err(Error::InheritedFalse),
+            None => String::from("0.0.0"),
         };
         let version_code = VersionCode::from_semver(&package_version)?.to_code(1);
 

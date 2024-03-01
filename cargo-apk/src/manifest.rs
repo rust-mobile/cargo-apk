@@ -16,7 +16,7 @@ pub enum Inheritable<T> {
 }
 
 pub(crate) struct Manifest {
-    pub(crate) version: Inheritable<String>,
+    pub(crate) version: Option<Inheritable<String>>,
     pub(crate) apk_name: Option<String>,
     pub(crate) android_manifest: AndroidManifest,
     pub(crate) build_targets: Vec<Target>,
@@ -72,7 +72,7 @@ impl Root {
 
 #[derive(Debug, Clone, Deserialize)]
 pub(crate) struct Package {
-    pub(crate) version: Inheritable<String>,
+    pub(crate) version: Option<Inheritable<String>>,
     pub(crate) metadata: Option<PackageMetadata>,
 }
 
