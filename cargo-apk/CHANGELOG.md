@@ -1,5 +1,7 @@
 # Unreleased
 
+- Support for optional `package.version` field in `Cargo.toml`. ([#56](https://github.com/rust-mobile/cargo-apk/pull/56))
+
 # 0.10.0 (2023-11-30)
 
 - Bump MSRV to 1.70 to reflect dependency updates.
