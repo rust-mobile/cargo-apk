@@ -6,6 +6,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs;
+#[cfg(target_family = "unix")]
+use std::os::unix::prelude::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -66,7 +68,7 @@ impl ApkConfig {
     }
 
     pub fn create_apk(&self) -> Result<UnalignedApk, NdkError> {
-        std::fs::create_dir_all(&self.build_dir)?;
+        fs::create_dir_all(&self.build_dir)?;
         self.manifest.write_to(&self.build_dir)?;
 
         let target_sdk_version = self
@@ -124,11 +126,13 @@ impl<'a> UnalignedApk<'a> {
         let abi = target.android_abi();
         let lib_path = Path::new("lib").join(abi).join(path.file_name().unwrap());
         let out = self.config.build_dir.join(&lib_path);
-        std::fs::create_dir_all(out.parent().unwrap())?;
+        fs::create_dir_all(out.parent().unwrap())?;
 
         match self.config.strip {
             StripConfig::Default => {
-                std::fs::copy(path, out)?;
+                fs::copy(path, out.clone())?;
+                #[cfg(target_family = "unix")]
+                fs::set_permissions(out, fs::Permissions::from_mode(0o644))?;
             }
             StripConfig::Strip | StripConfig::Split => {
                 let obj_copy = self.config.ndk.toolchain_bin("objcopy", target)?;
