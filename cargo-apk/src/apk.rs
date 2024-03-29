@@ -15,6 +15,7 @@ pub struct ApkBuilder<'a> {
     ndk: Ndk,
     manifest: Manifest,
     build_dir: PathBuf,
+    current_user: Option<String>,
     build_targets: Vec<Target>,
     device_serial: Option<String>,
 }
@@ -44,6 +45,7 @@ impl<'a> ApkBuilder<'a> {
                 .detect_abi(device_serial.as_deref())
                 .unwrap_or(Target::Arm64V8a)]
         };
+        let current_user = ndk.get_current_user(device_serial.as_deref());
         let build_dir = dunce::simplified(cmd.target_dir())
             .join(cmd.profile())
             .join("apk");
@@ -132,6 +134,7 @@ impl<'a> ApkBuilder<'a> {
             manifest,
             build_dir,
             build_targets,
+            current_user,
             device_serial,
         })
     }
@@ -310,15 +313,18 @@ impl<'a> ApkBuilder<'a> {
     }
 
     pub fn run(&self, artifact: &Artifact, no_logcat: bool) -> Result<(), Error> {
+        let device_serial = self.device_serial.as_deref();
+        let user_id = self.current_user.as_deref();
+
         let apk = self.build(artifact)?;
-        apk.reverse_port_forwarding(self.device_serial.as_deref())?;
-        apk.install(self.device_serial.as_deref())?;
-        apk.start(self.device_serial.as_deref())?;
-        let uid = apk.uidof(self.device_serial.as_deref())?;
+        apk.reverse_port_forwarding(device_serial)?;
+        apk.install(device_serial, user_id)?;
+        apk.start(device_serial)?;
+        let uid = apk.uidof(device_serial, user_id)?;
 
         if !no_logcat {
             self.ndk
-                .adb(self.device_serial.as_deref())?
+                .adb(device_serial)?
                 .arg("logcat")
                 .arg("-v")
                 .arg("color")
@@ -332,7 +338,7 @@ impl<'a> ApkBuilder<'a> {
 
     pub fn gdb(&self, artifact: &Artifact) -> Result<(), Error> {
         let apk = self.build(artifact)?;
-        apk.install(self.device_serial.as_deref())?;
+        apk.install(self.device_serial.as_deref(), self.current_user.as_deref())?;
 
         let target_dir = self.build_dir.join(artifact.build_dir());
         self.ndk.ndk_gdb(
