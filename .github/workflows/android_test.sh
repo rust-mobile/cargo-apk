@@ -12,7 +12,13 @@ if [ -z "$1" ];
 then
     cargo apk run -p ndk-examples --target x86_64-linux-android --example hello_world --no-logcat
 else
-    adb install -r "$1/hello_world.apk"
+    user_id=$(adb shell am get-current-user)
+    if [ -z "$user_id" ];
+    then
+        adb install -r "$1/hello_world.apk"
+    else
+        adb install --user $user_id -r "$1/hello_world.apk"
+    fi
     adb shell am start -a android.intent.action.MAIN -n "rust.example.hello_world/android.app.NativeActivity"
 fi
 
