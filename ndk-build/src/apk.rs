@@ -282,7 +282,11 @@ impl Apk {
         Ok(())
     }
 
-    pub fn install(&self, device_serial: Option<&str>, user_id: Option<&str>) -> Result<(), NdkError> {
+    pub fn install(
+        &self,
+        device_serial: Option<&str>,
+        user_id: Option<&str>,
+    ) -> Result<(), NdkError> {
         let mut adb = self.ndk.adb(device_serial)?;
 
         adb.arg("install").arg("-r").arg(&self.path);
@@ -314,7 +318,11 @@ impl Apk {
         Ok(())
     }
 
-    pub fn uidof(&self, device_serial: Option<&str>, user_id: Option<&str>) -> Result<u32, NdkError> {
+    pub fn uidof(
+        &self,
+        device_serial: Option<&str>,
+        user_id: Option<&str>,
+    ) -> Result<u32, NdkError> {
         let mut adb = self.ndk.adb(device_serial)?;
         adb.arg("shell")
             .arg("pm")
@@ -326,7 +334,7 @@ impl Apk {
         if let Some(uid) = user_id {
             adb.arg("--user").arg(uid);
         }
-    
+
         let output = adb.output()?;
 
         if !output.status.success() {

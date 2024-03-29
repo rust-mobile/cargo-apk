@@ -481,9 +481,7 @@ impl Ndk {
     pub fn get_current_user(&self, device_serial: Option<&str>) -> Option<String> {
         let mut adb = self.adb(device_serial).ok()?;
 
-        adb.arg("shell")
-            .arg("am")
-            .arg("get-current-user");
+        adb.arg("shell").arg("am").arg("get-current-user");
         let output = adb.output().ok()?;
 
         if !output.status.success() {
