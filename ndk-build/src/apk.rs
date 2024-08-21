@@ -122,7 +122,11 @@ impl<'a> UnalignedApk<'a> {
             return Err(NdkError::PathNotFound(path.into()));
         }
         let abi = target.android_abi();
-        let lib_path = Path::new("lib").join(abi).join(path.file_name().unwrap());
+        let mut filename = PathBuf::from(path.file_name().unwrap());
+        if filename.extension().is_none() {
+            filename = PathBuf::from(format!("lib{}.so", filename.display()));
+        }
+        let lib_path = Path::new("lib").join(abi).join(filename);
         let out = self.config.build_dir.join(&lib_path);
         std::fs::create_dir_all(out.parent().unwrap())?;
 

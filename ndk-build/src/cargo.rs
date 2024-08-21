@@ -68,6 +68,9 @@ pub fn cargo_ndk(
     }
     rustflags.push_str("-Clink-arg=");
     rustflags.push_str(&clang_target);
+    rustflags.push_str(SEP);
+    rustflags.push_str("-Clink-arg=-rdynamic");
+    // rustflags.push_str("-Clink-arg=-Wl,-export-dynamic");
 
     let ar = ndk.toolchain_bin("ar", target)?;
     cargo.env(format!("AR_{triple}"), &ar);

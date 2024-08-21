@@ -220,7 +220,9 @@ impl<'a> ApkBuilder<'a> {
         for target in &self.build_targets {
             let triple = target.rust_triple();
             let build_dir = self.cmd.build_dir(Some(triple));
-            let artifact = self.cmd.artifact(artifact, Some(triple), CrateType::Cdylib);
+            // TODO: Read crate type from Cargo.toml/metadata?
+            let artifact = self.cmd.artifact(artifact, Some(triple), CrateType::Bin);
+            // let artifact = self.cmd.artifact(artifact, Some(triple), CrateType::Cdylib);
 
             let mut cargo = cargo_ndk(
                 &self.ndk,
