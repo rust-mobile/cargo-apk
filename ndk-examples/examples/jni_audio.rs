@@ -69,8 +69,8 @@ fn enumerate_audio_devices() -> Result<(), Box<dyn std::error::Error>> {
             sample_rates
         };
 
-        println!("Device {}: Id {}, Type {}", product_name, id, ty);
-        println!("sample rates: {:#?}", sample_rates);
+        println!("Device {product_name}: Id {id}, Type {ty}");
+        println!("sample rates: {sample_rates:#?}");
     }
 
     Ok(())

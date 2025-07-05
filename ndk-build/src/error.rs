@@ -45,7 +45,7 @@ pub enum NdkError {
     #[error("Invalid semver")]
     InvalidSemver,
     #[error("Command `{}` had a non-zero exit code.", format!("{:?}", .0).replace('"', ""))]
-    CmdFailed(Command),
+    CmdFailed(Box<Command>),
     #[error(transparent)]
     Serialize(#[from] quick_xml::de::DeError),
     #[error("String `{1}` is not a UID")]

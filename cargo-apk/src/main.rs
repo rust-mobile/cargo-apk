@@ -88,11 +88,11 @@ fn split_apk_and_cargo_args(input: Vec<String>) -> (Args, Vec<String>) {
             assert!(!arg.is_positional());
             arg.get_short_and_visible_aliases()
                 .iter()
-                .flat_map(|shorts| shorts.iter().map(|short| format!("-{}", short)))
+                .flat_map(|shorts| shorts.iter().map(|short| format!("-{short}")))
                 .chain(
                     arg.get_long_and_visible_aliases()
                         .iter()
-                        .flat_map(|longs| longs.iter().map(|short| format!("--{}", short))),
+                        .flat_map(|longs| longs.iter().map(|short| format!("--{short}"))),
                 )
                 .map(|arg_str| (arg_str, arg.get_action().takes_values()))
                 // Collect to prevent lifetime issues on temporaries created above

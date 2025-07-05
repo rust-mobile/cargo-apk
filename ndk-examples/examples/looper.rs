@@ -40,7 +40,7 @@ fn android_main(app: AndroidApp) {
                 unsafe { libc::read(fd, &mut recv as *mut _ as *mut _, U32_SIZE) } as usize,
                 U32_SIZE
             );
-            println!("Read custom event from pipe, in callback: {}", recv);
+            println!("Read custom event from pipe, in callback: {recv}");
             // Detach this handler by returning `false` once the count reaches 5
             recv < 5
         })
@@ -80,7 +80,7 @@ fn android_main(app: AndroidApp) {
                         redraw_pending = true;
                     }
                     PollEvent::Main(main_event) => {
-                        info!("Main event: {:?}", main_event);
+                        info!("Main event: {main_event:?}");
                         match main_event {
                             MainEvent::SaveState { saver, .. } => {
                                 saver.store("foo://bar".as_bytes());

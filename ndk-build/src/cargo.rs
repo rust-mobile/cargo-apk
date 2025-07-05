@@ -55,10 +55,10 @@ pub fn cargo_ndk(
 
     // Configure cross-compiler for `cc` crate
     // https://github.com/rust-lang/cc-rs#external-configuration-via-environment-variables
-    cargo.env(format!("CC_{}", triple), &clang);
-    cargo.env(format!("CFLAGS_{}", triple), &clang_target);
-    cargo.env(format!("CXX_{}", triple), &clang_pp);
-    cargo.env(format!("CXXFLAGS_{}", triple), &clang_target);
+    cargo.env(format!("CC_{triple}"), &clang);
+    cargo.env(format!("CFLAGS_{triple}"), &clang_target);
+    cargo.env(format!("CXX_{triple}"), &clang_pp);
+    cargo.env(format!("CXXFLAGS_{triple}"), &clang_target);
 
     // Configure LINKER for `rustc`
     // https://doc.rust-lang.org/beta/cargo/reference/environment-variables.html#configuration-environment-variables
@@ -70,7 +70,7 @@ pub fn cargo_ndk(
     rustflags.push_str(&clang_target);
 
     let ar = ndk.toolchain_bin("ar", target)?;
-    cargo.env(format!("AR_{}", triple), &ar);
+    cargo.env(format!("AR_{triple}"), &ar);
     cargo.env(cargo_env_target_cfg("AR", triple), &ar);
 
     // Workaround for https://github.com/rust-windowing/android-ndk-rs/issues/149:
@@ -133,7 +133,7 @@ impl VersionCode {
     }
 
     pub fn from_semver(version: &str) -> Result<Self, NdkError> {
-        let mut iter = version.split(|c1| ['.', '-', '+'].iter().any(|c2| c1 == *c2));
+        let mut iter = version.split(|c1| ['.', '-', '+'].contains(&c1));
         let mut p = || {
             iter.next()
                 .ok_or(NdkError::InvalidSemver)?

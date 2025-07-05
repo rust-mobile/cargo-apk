@@ -97,7 +97,7 @@ impl ApkConfig {
         }
 
         if !aapt.status()?.success() {
-            return Err(NdkError::CmdFailed(aapt));
+            return Err(NdkError::CmdFailed(Box::new(aapt)));
         }
 
         Ok(UnalignedApk {
@@ -140,7 +140,7 @@ impl<'a> UnalignedApk<'a> {
                     cmd.arg(&out);
 
                     if !cmd.status()?.success() {
-                        return Err(NdkError::CmdFailed(cmd));
+                        return Err(NdkError::CmdFailed(Box::new(cmd)));
                     }
                 }
 
@@ -154,7 +154,7 @@ impl<'a> UnalignedApk<'a> {
                         cmd.arg(&dwarf_path);
 
                         if !cmd.status()?.success() {
-                            return Err(NdkError::CmdFailed(cmd));
+                            return Err(NdkError::CmdFailed(Box::new(cmd)));
                         }
                     }
 
@@ -163,7 +163,7 @@ impl<'a> UnalignedApk<'a> {
                     cmd.arg(out);
 
                     if !cmd.status()?.success() {
-                        return Err(NdkError::CmdFailed(cmd));
+                        return Err(NdkError::CmdFailed(Box::new(cmd)));
                     }
                 }
             }
@@ -211,7 +211,7 @@ impl<'a> UnalignedApk<'a> {
         }
 
         if !aapt.status()?.success() {
-            return Err(NdkError::CmdFailed(aapt));
+            return Err(NdkError::CmdFailed(Box::new(aapt)));
         }
 
         let mut zipalign = self.config.build_tool(bin!("zipalign"))?;
@@ -223,7 +223,7 @@ impl<'a> UnalignedApk<'a> {
             .arg(self.config.apk());
 
         if !zipalign.status()?.success() {
-            return Err(NdkError::CmdFailed(zipalign));
+            return Err(NdkError::CmdFailed(Box::new(zipalign)));
         }
 
         Ok(UnsignedApk(self.config))
@@ -243,7 +243,7 @@ impl<'a> UnsignedApk<'a> {
             .arg(format!("pass:{}", &key.password))
             .arg(self.0.apk());
         if !apksigner.status()?.success() {
-            return Err(NdkError::CmdFailed(apksigner));
+            return Err(NdkError::CmdFailed(Box::new(apksigner)));
         }
         Ok(Apk::from_config(self.0))
     }
@@ -269,13 +269,13 @@ impl Apk {
 
     pub fn reverse_port_forwarding(&self, device_serial: Option<&str>) -> Result<(), NdkError> {
         for (from, to) in &self.reverse_port_forward {
-            println!("Reverse port forwarding from {} to {}", from, to);
+            println!("Reverse port forwarding from {from} to {to}");
             let mut adb = self.ndk.adb(device_serial)?;
 
             adb.arg("reverse").arg(from).arg(to);
 
             if !adb.status()?.success() {
-                return Err(NdkError::CmdFailed(adb));
+                return Err(NdkError::CmdFailed(Box::new(adb)));
             }
         }
 
@@ -287,7 +287,7 @@ impl Apk {
 
         adb.arg("install").arg("-r").arg(&self.path);
         if !adb.status()?.success() {
-            return Err(NdkError::CmdFailed(adb));
+            return Err(NdkError::CmdFailed(Box::new(adb)));
         }
         Ok(())
     }
@@ -303,7 +303,7 @@ impl Apk {
             .arg(format!("{}/android.app.NativeActivity", self.package_name));
 
         if !adb.status()?.success() {
-            return Err(NdkError::CmdFailed(adb));
+            return Err(NdkError::CmdFailed(Box::new(adb)));
         }
 
         Ok(())
@@ -320,7 +320,7 @@ impl Apk {
         let output = adb.output()?;
 
         if !output.status.success() {
-            return Err(NdkError::CmdFailed(adb));
+            return Err(NdkError::CmdFailed(Box::new(adb)));
         }
 
         let output = std::str::from_utf8(&output.stdout).unwrap();

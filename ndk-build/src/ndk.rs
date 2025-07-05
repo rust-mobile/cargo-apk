@@ -214,7 +214,7 @@ impl Ndk {
         let dir = self
             .sdk_path
             .join("platforms")
-            .join(format!("android-{}", platform));
+            .join(format!("android-{platform}"));
         if !dir.exists() {
             return Err(NdkError::PlatformNotFound(platform));
         }
@@ -264,7 +264,7 @@ impl Ndk {
             .join("toolchains")
             .join("llvm")
             .join("prebuilt")
-            .join(format!("{}-x86_64", arch));
+            .join(format!("{arch}-x86_64"));
         if !toolchain_dir.exists() {
             toolchain_dir.set_file_name(arch);
         }
@@ -315,7 +315,7 @@ impl Ndk {
         if gnu_path.exists() {
             Ok(gnu_path)
         } else {
-            let llvm_bin = format!("llvm-{}{}", name, ext);
+            let llvm_bin = format!("llvm-{name}{ext}");
             let llvm_path = toolchain_path.join(&llvm_bin);
             if llvm_path.exists() {
                 Ok(llvm_path)
@@ -334,7 +334,7 @@ impl Ndk {
         let prebuilt_dir = self
             .ndk_path
             .join("prebuilt")
-            .join(format!("{}-x86_64", arch));
+            .join(format!("{arch}-x86_64"));
         if !prebuilt_dir.exists() {
             Err(NdkError::PathNotFound(prebuilt_dir))
         } else {
@@ -416,7 +416,7 @@ impl Ndk {
                 .arg("-validity")
                 .arg("10000");
             if !keytool.status()?.success() {
-                return Err(NdkError::CmdFailed(keytool));
+                return Err(NdkError::CmdFailed(Box::new(keytool)));
             }
         }
         Ok(Key { path, password })

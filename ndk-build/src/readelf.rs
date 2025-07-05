@@ -57,7 +57,7 @@ impl<'a> UnalignedApk<'a> {
                         artifacts.push(path);
                     }
                 } else {
-                    eprintln!("Shared library \"{}\" not found.", need);
+                    eprintln!("Shared library \"{need}\" not found.");
                 }
             }
         }
@@ -71,7 +71,7 @@ fn list_needed_libs(readelf_path: &Path, library_path: &Path) -> Result<HashSet<
     let mut readelf = Command::new(readelf_path);
     let output = readelf.arg("-d").arg(library_path).output()?;
     if !output.status.success() {
-        return Err(NdkError::CmdFailed(readelf));
+        return Err(NdkError::CmdFailed(Box::new(readelf)));
     }
     let mut needed = HashSet::new();
     for line in output.stdout.lines() {

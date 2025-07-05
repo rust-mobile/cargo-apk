@@ -151,7 +151,7 @@ impl<'a> ApkBuilder<'a> {
             }
             self.cmd.args().apply(&mut cargo);
             if !cargo.status()?.success() {
-                return Err(NdkError::CmdFailed(cargo).into());
+                return Err(NdkError::CmdFailed(Box::new(cargo)).into());
             }
         }
         Ok(())
@@ -164,9 +164,9 @@ impl<'a> ApkBuilder<'a> {
         if manifest.package.is_empty() {
             let name = artifact.name.replace('-', "_");
             manifest.package = match artifact.r#type {
-                ArtifactType::Lib => format!("rust.{}", name),
-                ArtifactType::Bin => format!("rust.{}", name),
-                ArtifactType::Example => format!("rust.example.{}", name),
+                ArtifactType::Lib => format!("rust.{name}"),
+                ArtifactType::Bin => format!("rust.{name}"),
+                ArtifactType::Example => format!("rust.example.{name}"),
             };
         }
 
@@ -235,7 +235,7 @@ impl<'a> ApkBuilder<'a> {
             self.cmd.args().apply(&mut cargo);
 
             if !cargo.status()?.success() {
-                return Err(NdkError::CmdFailed(cargo).into());
+                return Err(NdkError::CmdFailed(Box::new(cargo)).into());
             }
 
             let mut libs_search_paths =
@@ -264,7 +264,7 @@ impl<'a> ApkBuilder<'a> {
             "CARGO_APK_{}_KEYSTORE",
             profile_name.to_uppercase().replace('-', "_")
         );
-        let password_env = format!("{}_PASSWORD", keystore_env);
+        let password_env = format!("{keystore_env}_PASSWORD");
 
         let path = std::env::var_os(&keystore_env).map(PathBuf::from);
         let password = std::env::var(&password_env).ok();
@@ -272,10 +272,7 @@ impl<'a> ApkBuilder<'a> {
         let signing_key = match (path, password) {
             (Some(path), Some(password)) => Key { path, password },
             (Some(path), None) if is_debug_profile => {
-                eprintln!(
-                    "{} not specified, falling back to default password",
-                    password_env
-                );
+                eprintln!("{password_env} not specified, falling back to default password");
                 Key {
                     path,
                     password: ndk_build::ndk::DEFAULT_DEV_KEYSTORE_PASSWORD.to_owned(),
@@ -364,7 +361,7 @@ impl<'a> ApkBuilder<'a> {
             }
 
             if !cargo.status()?.success() {
-                return Err(NdkError::CmdFailed(cargo).into());
+                return Err(NdkError::CmdFailed(Box::new(cargo)).into());
             }
         }
         Ok(())
