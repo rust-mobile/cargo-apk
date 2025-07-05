@@ -69,10 +69,10 @@ jobs:
       - uses: actions/upload-artifact@v3
         # Only need this for CI, unless users are interested in downloading
         # a ready-made app that does nothing but printing "hello world".
-        if: ${{ matrix.rust-target == 'x86_64-linux-android' }}
+        if: ${{ matrix.rust-target == 'x86_64-linux-android' && matrix.rust-channel == 'stable' }}
         name: Upload hello_world apk
         with:
-          name: hello_world_${{ matrix.os }}_${{ matrix.rust-target }}
+          name: hello_world_${{ matrix.os }}_${{ matrix.rust-target }}_${{ matrix.rust-channel }}
           path: ./target/debug/apk/examples/hello_world.apk
 
   android_emulator:
@@ -99,7 +99,7 @@ jobs:
         if: ${{ matrix.source_os != 'local' }}
         id: download
         with:
-          name: hello_world_${{ matrix.source_os }}_x86_64-linux-android
+          name: hello_world_${{ matrix.source_os }}_x86_64-linux-android_stable
 
       - name: Install `cargo-apk` and add `x86_64-linux-android` target
         if: ${{ matrix.source_os == 'local' }}
