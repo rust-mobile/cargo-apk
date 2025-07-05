@@ -110,7 +110,7 @@ keystore_password = "android"
 
 # See https://developer.android.com/guide/topics/manifest/uses-sdk-element
 #
-# Defaults to a `min_sdk_version` of 23 and `target_sdk_version` of 30 (or lower if the detected NDK doesn't support this).
+# Defaults to a `min_sdk_version` of `23` and `target_sdk_version` of `35` (or lower if the detected NDK doesn't support this).
 [package.metadata.android.sdk]
 min_sdk_version = 23
 target_sdk_version = 30

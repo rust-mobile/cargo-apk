@@ -1,5 +1,7 @@
 # Unreleased
 
+- **Breaking:** Default `target_sdk_version` to `35` (if installed), matching Google Play requirements starting August 31 2025.
+
 # 0.10.0 (2023-11-30)
 
 - Bump MSRV to 1.70 to reflect dependency updates.
