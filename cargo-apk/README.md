@@ -1,4 +1,4 @@
-# cargo apk
+# Create Android packages (APKs) from native Rust crates
 
 [![Actions Status](https://github.com/rust-mobile/cargo-apk/actions/workflows/rust.yml/badge.svg)](https://github.com/rust-mobile/cargo-apk/actions)
 [![Latest version](https://img.shields.io/crates/v/cargo-apk.svg?logo=rust)](https://crates.io/crates/cargo-apk)
@@ -8,10 +8,10 @@
 ![MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)
 
-> [!CAUTION]
-> This tool is deprecated in favour of [`xbuild`](https://github.com/rust-mobile/xbuild).
+Tool for creating Android packages from native Rust crates, requiring minimal setup and tooling.  Ideal for apps that provide a [`NativeActivity`] via our [`ndk` crate].
 
-Tool for creating Android packages.
+[`NativeActivity`]: https://developer.android.com/reference/android/app/NativeActivity
+[`ndk` crate]: https://crates.io/crates/ndk
 
 ## Installation
 
@@ -21,7 +21,7 @@ From crates.io:
 $ cargo install cargo-apk
 ```
 
-From source:
+From locally downloaded or cloned source:
 
 ```console
 $ cargo install --path cargo-apk/
@@ -29,14 +29,16 @@ $ cargo install --path cargo-apk/
 
 ## Commands
 
-- `build`: Compiles the current package
-- `run`: Run a binary or example of the local package
-- `gdb`: Start a gdb session attached to an adb device with symbols loaded
+- `build`: Compiles the current rate and packages it into an APK
+- `run`: Run a binary or example of the local package on an attached Android device via `adb`
+- `gdb`: Start a gdb session attached to an `adb` device with symbols loaded
+
+Invoke `cargo apk help` for a more detailed overview of all available commands and their options (`cargo apk run --help` or `cargo apk help run` for example).
 
 ## Manifest
 
 `cargo` supports the `metadata` table for configurations for external tools like `cargo apk`.
-Following configuration options are supported by `cargo apk` under `[package.metadata.android]`:
+The following configuration options are supported by `cargo apk` under `[package.metadata.android]`:
 
 ```toml
 [package.metadata.android]
