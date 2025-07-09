@@ -5,7 +5,7 @@ use ndk_build::apk::{Apk, ApkConfig};
 use ndk_build::cargo::{cargo_ndk, VersionCode};
 use ndk_build::dylibs::get_libs_search_paths;
 use ndk_build::error::NdkError;
-use ndk_build::manifest::{IntentFilter, MetaData};
+use ndk_build::manifest::{AndroidManifestInput, IntentFilter, MetaData};
 use ndk_build::ndk::{Key, Ndk};
 use ndk_build::target::Target;
 use std::path::PathBuf;
@@ -74,56 +74,55 @@ impl<'a> ApkBuilder<'a> {
         let version_code = VersionCode::from_semver(&package_version)?.to_code(1);
 
         // Set default Android manifest values
-        if manifest
-            .android_manifest
-            .version_name
-            .replace(package_version)
-            .is_some()
+        if let AndroidManifestInput::FromToml(ref mut android_manifest) = manifest.android_manifest
         {
-            panic!("version_name should not be set in TOML");
-        }
+            if android_manifest
+                .version_name
+                .replace(package_version)
+                .is_some()
+            {
+                panic!("version_name should not be set in TOML");
+            }
 
-        if manifest
-            .android_manifest
-            .version_code
-            .replace(version_code)
-            .is_some()
-        {
-            panic!("version_code should not be set in TOML");
-        }
+            if android_manifest
+                .version_code
+                .replace(version_code)
+                .is_some()
+            {
+                panic!("version_code should not be set in TOML");
+            }
 
-        let target_sdk_version = *manifest
-            .android_manifest
-            .sdk
-            .target_sdk_version
-            .get_or_insert_with(|| ndk.default_target_platform());
+            let target_sdk_version = android_manifest
+                .sdk
+                .target_sdk_version
+                .get_or_insert_with(|| ndk.default_target_platform());
 
-        manifest
-            .android_manifest
-            .application
-            .debuggable
-            .get_or_insert_with(|| *cmd.profile() == Profile::Dev);
+            android_manifest
+                .application
+                .debuggable
+                .get_or_insert_with(|| *cmd.profile() == Profile::Dev);
 
-        let activity = &mut manifest.android_manifest.application.activity;
+            let activity = &mut android_manifest.application.activity;
 
-        // Add a default `MAIN` action to launch the activity, if the user didn't supply it by hand.
-        if activity
-            .intent_filter
-            .iter()
-            .all(|i| i.actions.iter().all(|f| f != "android.intent.action.MAIN"))
-        {
-            activity.intent_filter.push(IntentFilter {
-                actions: vec!["android.intent.action.MAIN".to_string()],
-                categories: vec!["android.intent.category.LAUNCHER".to_string()],
-                data: vec![],
-            });
-        }
+            // Add a default `MAIN` action to launch the activity, if the user didn't supply it by hand.
+            if activity
+                .intent_filter
+                .iter()
+                .all(|i| i.actions.iter().all(|f| f != "android.intent.action.MAIN"))
+            {
+                activity.intent_filter.push(IntentFilter {
+                    actions: vec!["android.intent.action.MAIN".into()],
+                    categories: vec!["android.intent.category.LAUNCHER".into()],
+                    data: vec![],
+                });
+            }
 
-        // Export the sole Rust activity on Android S and up, if the user didn't explicitly do so.
-        // Without this, apps won't start on S+.
-        // https://developer.android.com/about/versions/12/behavior-changes-12#exported
-        if target_sdk_version >= 31 {
-            activity.exported.get_or_insert(true);
+            // Export the sole Rust activity on Android S and up, if the user didn't explicitly do so.
+            // Without this, apps won't start on S+.
+            // https://developer.android.com/about/versions/12/behavior-changes-12#exported
+            if *target_sdk_version >= 31 {
+                activity.exported.get_or_insert(true);
+            }
         }
 
         Ok(Self {
@@ -158,26 +157,41 @@ impl<'a> ApkBuilder<'a> {
     }
 
     pub fn build(&self, artifact: &Artifact) -> Result<Apk, Error> {
-        // Set artifact specific manifest default values.
-        let mut manifest = self.manifest.android_manifest.clone();
-
-        if manifest.package.is_empty() {
-            let name = artifact.name.replace('-', "_");
-            manifest.package = match artifact.r#type {
-                ArtifactType::Lib => format!("rust.{name}"),
-                ArtifactType::Bin => format!("rust.{name}"),
-                ArtifactType::Example => format!("rust.example.{name}"),
+        let dexes: Vec<_> =
+            if let Ok(read_dir) = std::fs::read_dir(self.build_dir.parent().unwrap()) {
+                read_dir
+                    .filter_map(|entry| entry.ok())
+                    .filter(|entry| entry.file_type().map(|t| t.is_file()).unwrap_or(false))
+                    .map(|entry| entry.path())
+                    .filter(|path| path.extension() == Some(std::ffi::OsStr::new("dex")))
+                    .collect()
+            } else {
+                Vec::new()
             };
-        }
 
-        if manifest.application.label.is_empty() {
-            manifest.application.label = artifact.name.to_string();
-        }
+        // Set artifact specific manifest default values.
+        let mut android_manifest = self.manifest.android_manifest.clone();
+        if let AndroidManifestInput::FromToml(ref mut manifest) = android_manifest {
+            if manifest.package.is_empty() {
+                let name = artifact.name.replace('-', "_");
+                manifest.package = match artifact.r#type {
+                    ArtifactType::Lib => format!("rust.{name}"),
+                    ArtifactType::Bin => format!("rust.{name}"),
+                    ArtifactType::Example => format!("rust.example.{name}"),
+                };
+            }
 
-        manifest.application.activity.meta_data.push(MetaData {
-            name: "android.app.lib_name".to_string(),
-            value: artifact.name.replace('-', "_"),
-        });
+            if manifest.application.label.is_empty() {
+                manifest.application.label = artifact.name.to_string();
+            }
+
+            manifest.application.activity.meta_data.push(MetaData {
+                name: "android.app.lib_name".to_string(),
+                value: artifact.name.replace('-', "_"),
+            });
+
+            manifest.application.has_code = !dexes.is_empty();
+        }
 
         let crate_path = self.cmd.manifest().parent().expect("invalid manifest path");
 
@@ -210,7 +224,8 @@ impl<'a> ApkBuilder<'a> {
             apk_name,
             assets,
             resources,
-            manifest,
+            dexes,
+            manifest: android_manifest,
             disable_aapt_compression: is_debug_profile,
             strip: self.manifest.strip,
             reverse_port_forward: self.manifest.reverse_port_forward.clone(),
@@ -373,11 +388,9 @@ impl<'a> ApkBuilder<'a> {
     /// Has a lower bound of `23` to retain backwards compatibility with
     /// the previous default.
     fn min_sdk_version(&self) -> u32 {
-        self.manifest
-            .android_manifest
-            .sdk
-            .min_sdk_version
-            .unwrap_or(23)
-            .max(23)
+        let Ok(manifest) = self.manifest.android_manifest.get_manifest_info() else {
+            return 23;
+        };
+        manifest.sdk.min_sdk_version.unwrap_or(23).max(23)
     }
 }

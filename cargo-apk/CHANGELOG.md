@@ -1,6 +1,10 @@
 # Unreleased
 
 - **Breaking:** Default `target_sdk_version` to `35` (if installed), matching Google Play requirements starting August 31 2025.
+- Support using the user-specified android manifest file.
+- Support user-declared activities aside from the first main native activity.
+- Add Dex data insertion feature.
+- Fix all new `clippy` lints up to Rust 1.88.
 
 # 0.10.0 (2023-11-30)
 

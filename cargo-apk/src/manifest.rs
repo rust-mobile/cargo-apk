@@ -1,6 +1,6 @@
 use crate::error::Error;
 use ndk_build::apk::StripConfig;
-use ndk_build::manifest::AndroidManifest;
+use ndk_build::manifest::{AndroidManifest, AndroidManifestInput};
 use ndk_build::target::Target;
 use serde::Deserialize;
 use std::{
@@ -18,7 +18,7 @@ pub enum Inheritable<T> {
 pub(crate) struct Manifest {
     pub(crate) version: Inheritable<String>,
     pub(crate) apk_name: Option<String>,
-    pub(crate) android_manifest: AndroidManifest,
+    pub(crate) android_manifest: AndroidManifestInput,
     pub(crate) build_targets: Vec<Target>,
     pub(crate) assets: Option<PathBuf>,
     pub(crate) resources: Option<PathBuf>,
@@ -42,10 +42,24 @@ impl Manifest {
             .unwrap_or_default()
             .android
             .unwrap_or_default();
+        let android_manifest = if let Some(ref file) = metadata.android_manifest_file {
+            println!(
+                "Using the *unchecked* user-specified Android manifest file `{}`",
+                file.display()
+            );
+            AndroidManifestInput::FromXml(path.parent().unwrap().join(file))
+        } else if let Some(ref manifest) = metadata.android_manifest {
+            AndroidManifestInput::FromToml(manifest.clone())
+        } else {
+            println!(
+                "`android_manifest_file` is unspecified, and Android manifest info cannot be parsed from {path:?}"
+            );
+            AndroidManifestInput::FromToml(AndroidManifest::default())
+        };
         Ok(Self {
             version: package.version,
             apk_name: metadata.apk_name,
-            android_manifest: metadata.android_manifest,
+            android_manifest,
             build_targets: metadata.build_targets,
             assets: metadata.assets,
             resources: metadata.resources,
@@ -97,7 +111,8 @@ pub(crate) struct PackageMetadata {
 struct AndroidMetadata {
     apk_name: Option<String>,
     #[serde(flatten)]
-    android_manifest: AndroidManifest,
+    android_manifest: Option<AndroidManifest>,
+    android_manifest_file: Option<PathBuf>,
     #[serde(default)]
     build_targets: Vec<Target>,
     assets: Option<PathBuf>,
