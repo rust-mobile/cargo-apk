@@ -51,10 +51,11 @@ impl Manifest {
         } else if let Some(ref manifest) = metadata.android_manifest {
             AndroidManifestInput::FromToml(manifest.clone())
         } else {
-            panic!(
+            println!(
                 "`android_manifest_file` is unspecified, and Android manifest info cannot be parsed from {:?}",
                 path
             );
+            AndroidManifestInput::FromToml(AndroidManifest::default())
         };
         Ok(Self {
             version: package.version,
