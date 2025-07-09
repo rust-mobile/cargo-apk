@@ -18,6 +18,7 @@ impl<'a> UnalignedApk<'a> {
         let min_sdk_version = self
             .config()
             .manifest
+            .get_manifest_info()?
             .sdk
             .min_sdk_version
             .unwrap_or(default_min_sdk);

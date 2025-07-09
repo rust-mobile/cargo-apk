@@ -35,6 +35,14 @@ $ cargo install --path cargo-apk/
 
 Invoke `cargo apk help` for a more detailed overview of all available commands and their options (`cargo apk run --help` or `cargo apk help run` for example).
 
+## Dex File
+
+Although Dex files can be loaded by Android `DexClassLoader` on runtime, custom activities and services must be
+defined in the package's `classes.dex` file to avoid the `LoadedApk.mClassLoader` runtime replacement hack.
+
+Currently the Dex file can be built by the application's build script with <https://docs.rs/android-build>,
+the Dex output path should be `<CARGO_MANIFEST_DIR>/target/<PROFILE>` to be picked up by `cargo-apk`.
+
 ## Manifest
 
 `cargo` supports the `metadata` table for configurations for external tools like `cargo apk`.
@@ -108,13 +116,18 @@ shared_user_id = "my.shared.user.id"
 path = "relative/or/absolute/path/to/my.keystore"
 keystore_password = "android"
 
+# Uncomment this item to use the existing Android manifest file instead of generating it.
+# This is useful for specifying manifest items not supported by `cargo-apk`.
+# Note: All configurations below will be *ignored* if the XML file is used!
+# android_manifest_file = "AndroidManifest.xml"
+
 # See https://developer.android.com/guide/topics/manifest/uses-sdk-element
 #
 # Defaults to a `min_sdk_version` of `23` and `target_sdk_version` of `35` (or lower if the detected NDK doesn't support this).
 [package.metadata.android.sdk]
 min_sdk_version = 23
-target_sdk_version = 30
-max_sdk_version = 29
+target_sdk_version = 35
+max_sdk_version = 35
 
 # See https://developer.android.com/guide/topics/manifest/uses-feature-element
 #
@@ -189,7 +202,10 @@ name = "com.samsung.android.vr.application.mode"
 value = "vr_only"
 
 # See https://developer.android.com/guide/topics/manifest/activity-element
-[package.metadata.android.application.activity]
+#
+# Note: make sure the element for the main `NativeActivity` is the topmost activity
+# element in this file if you are declaring multiple activities.
+[[package.metadata.android.application.activity]]
 
 # See https://developer.android.com/guide/topics/manifest/activity-element#config
 #

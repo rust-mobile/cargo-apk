@@ -1,13 +1,15 @@
 use crate::error::NdkError;
-use crate::manifest::AndroidManifest;
+use crate::manifest::AndroidManifestInput;
 use crate::ndk::{Key, Ndk};
 use crate::target::Target;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use zip::ZipWriter;
 
 /// The options for how to treat debug symbols that are present in any `.so`
 /// files that are added to the APK.
@@ -40,7 +42,8 @@ pub struct ApkConfig {
     pub apk_name: String,
     pub assets: Option<PathBuf>,
     pub resources: Option<PathBuf>,
-    pub manifest: AndroidManifest,
+    pub dexes: Vec<PathBuf>,
+    pub manifest: AndroidManifestInput,
     pub disable_aapt_compression: bool,
     pub strip: StripConfig,
     pub reverse_port_forward: HashMap<String, String>,
@@ -71,6 +74,7 @@ impl ApkConfig {
 
         let target_sdk_version = self
             .manifest
+            .get_manifest_info()?
             .sdk
             .target_sdk_version
             .unwrap_or_else(|| self.ndk.default_target_platform());
@@ -98,6 +102,32 @@ impl ApkConfig {
 
         if !aapt.status()?.success() {
             return Err(NdkError::CmdFailed(Box::new(aapt)));
+        }
+
+        if !self.dexes.is_empty() {
+            // XXX: import `android-build` and use `Dexer` (D8) to add dex files into the apk,
+            // then remove `zip` dependency to reduce crate size and eliminate the annoying
+            // `zip     : warning: header mismatch` warning.
+            let map_zip_err = |e: zip::result::ZipError| std::io::Error::from(e);
+            let mut apk_file = fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(self.unaligned_apk())?;
+            for dex_path in &self.dexes {
+                let dex_data = fs::read(dex_path)?;
+                let mut apk_zip = ZipWriter::new_append(&mut apk_file).map_err(map_zip_err)?;
+                let Some(dex_file_name) = dex_path.file_name().map(|s| s.to_string_lossy()) else {
+                    continue;
+                };
+                apk_zip
+                    .start_file(
+                        dex_file_name.as_ref(),
+                        zip::write::SimpleFileOptions::default(),
+                    )
+                    .map_err(map_zip_err)?;
+                apk_zip.write_all(&dex_data).unwrap();
+                apk_zip.finish().map_err(map_zip_err)?;
+            }
         }
 
         Ok(UnalignedApk {
@@ -245,7 +275,7 @@ impl<'a> UnsignedApk<'a> {
         if !apksigner.status()?.success() {
             return Err(NdkError::CmdFailed(Box::new(apksigner)));
         }
-        Ok(Apk::from_config(self.0))
+        Apk::from_config(self.0)
     }
 }
 
@@ -257,14 +287,14 @@ pub struct Apk {
 }
 
 impl Apk {
-    pub fn from_config(config: &ApkConfig) -> Self {
+    pub fn from_config(config: &ApkConfig) -> Result<Self, NdkError> {
         let ndk = config.ndk.clone();
-        Self {
+        Ok(Self {
             path: config.apk(),
-            package_name: config.manifest.package.clone(),
+            package_name: config.manifest.get_manifest_info()?.package.clone(),
             ndk,
             reverse_port_forward: config.reverse_port_forward.clone(),
-        }
+        })
     }
 
     pub fn reverse_port_forwarding(&self, device_serial: Option<&str>) -> Result<(), NdkError> {
