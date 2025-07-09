@@ -34,19 +34,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        rust-channel: ["stable", "nightly"]
+        rust-channel: [stable, nightly]
         rust-target:
-          - "armv7-linux-androideabi"
-          - "aarch64-linux-android"
-          - "i686-linux-android"
-          - "x86_64-linux-android"
+          - armv7-linux-androideabi
+          - aarch64-linux-android
+          - i686-linux-android
+          - x86_64-linux-android
         include:
           - os: windows-latest
-            rust-channel: "stable"
-            rust-target: "aarch64-linux-android"
+            rust-channel: stable
+            rust-target: aarch64-linux-android
           - os: windows-latest
-            rust-channel: "stable"
-            rust-target: "x86_64-linux-android"
+            rust-channel: stable
+            rust-target: x86_64-linux-android
+          - os: macos-latest
+            rust-channel: stable
+            rust-target: x86_64-linux-android
 
     runs-on: ${{ matrix.os }}
     name: Build apk
@@ -78,10 +81,10 @@ jobs:
   android_emulator:
     name: hello_world example on emulator
     needs: build
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        source_os: [ubuntu-latest, windows-latest, local]
+        source_os: [local, windows-latest, macos-latest]
     env:
       api-level: 29
       emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
@@ -91,6 +94,13 @@ jobs:
       profile: Nexus 6
 
     steps:
+      # https://github.com/reactivecircus/android-emulator-runner?tab=readme-ov-file#running-hardware-accelerated-emulators-on-linux-runners
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -154,7 +164,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        rust-channel: ["stable", "nightly"]
+        rust-channel: [stable, nightly]
 
     runs-on: ${{ matrix.os }}
     name: Host-side tests
@@ -178,7 +188,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        rust-channel: ["stable", "nightly"]
+        rust-channel: [stable, nightly]
 
     runs-on: ${{ matrix.os }}
     name: Build-test docs
