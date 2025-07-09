@@ -52,8 +52,7 @@ impl Manifest {
             AndroidManifestInput::FromToml(manifest.clone())
         } else {
             println!(
-                "`android_manifest_file` is unspecified, and Android manifest info cannot be parsed from {:?}",
-                path
+                "`android_manifest_file` is unspecified, and Android manifest info cannot be parsed from {path:?}"
             );
             AndroidManifestInput::FromToml(AndroidManifest::default())
         };
