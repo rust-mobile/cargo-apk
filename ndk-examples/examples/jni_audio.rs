@@ -3,7 +3,9 @@ use jni::objects::JObject;
 
 #[no_mangle]
 fn android_main(_app: AndroidApp) {
-    android_logger::init_once(android_logger::Config::default().with_min_level(log::Level::Info));
+    android_logger::init_once(
+        android_logger::Config::default().with_max_level(log::LevelFilter::Info),
+    );
     enumerate_audio_devices().unwrap();
 }
 
