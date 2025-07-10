@@ -157,18 +157,6 @@ impl<'a> ApkBuilder<'a> {
     }
 
     pub fn build(&self, artifact: &Artifact) -> Result<Apk, Error> {
-        let dexes: Vec<_> =
-            if let Ok(read_dir) = std::fs::read_dir(self.build_dir.parent().unwrap()) {
-                read_dir
-                    .filter_map(|entry| entry.ok())
-                    .filter(|entry| entry.file_type().map(|t| t.is_file()).unwrap_or(false))
-                    .map(|entry| entry.path())
-                    .filter(|path| path.extension() == Some(std::ffi::OsStr::new("dex")))
-                    .collect()
-            } else {
-                Vec::new()
-            };
-
         // Set artifact specific manifest default values.
         let mut android_manifest = self.manifest.android_manifest.clone();
         if let AndroidManifestInput::FromToml(ref mut manifest) = android_manifest {
@@ -189,8 +177,6 @@ impl<'a> ApkBuilder<'a> {
                 name: "android.app.lib_name".to_string(),
                 value: artifact.name.replace('-', "_"),
             });
-
-            manifest.application.has_code = !dexes.is_empty();
         }
 
         let crate_path = self.cmd.manifest().parent().expect("invalid manifest path");
@@ -218,20 +204,7 @@ impl<'a> ApkBuilder<'a> {
             .clone()
             .unwrap_or_else(|| artifact.name.to_string());
 
-        let config = ApkConfig {
-            ndk: self.ndk.clone(),
-            build_dir: self.build_dir.join(artifact.build_dir()),
-            apk_name,
-            assets,
-            resources,
-            dexes,
-            manifest: android_manifest,
-            disable_aapt_compression: is_debug_profile,
-            strip: self.manifest.strip,
-            reverse_port_forward: self.manifest.reverse_port_forward.clone(),
-        };
-        let mut apk = config.create_apk()?;
-
+        let mut built_libs = Vec::with_capacity(self.build_targets.len());
         for target in &self.build_targets {
             let triple = target.rust_triple();
             let build_dir = self.cmd.build_dir(Some(triple));
@@ -257,15 +230,47 @@ impl<'a> ApkBuilder<'a> {
                 get_libs_search_paths(self.cmd.target_dir(), triple, self.cmd.profile().as_ref())?;
             libs_search_paths.push(build_dir.join("deps"));
 
+            built_libs.push((artifact, *target, libs_search_paths));
+        }
+
+        let dexes: Vec<_> =
+            if let Ok(read_dir) = std::fs::read_dir(self.build_dir.parent().unwrap()) {
+                read_dir
+                    .filter_map(|entry| entry.ok())
+                    .filter(|entry| entry.file_type().map(|t| t.is_file()).unwrap_or(false))
+                    .map(|entry| entry.path())
+                    .filter(|path| path.extension() == Some(std::ffi::OsStr::new("dex")))
+                    .collect()
+            } else {
+                Vec::new()
+            };
+        if let AndroidManifestInput::FromToml(ref mut manifest) = android_manifest {
+            manifest.application.has_code = !dexes.is_empty();
+        }
+
+        let config = ApkConfig {
+            ndk: self.ndk.clone(),
+            build_dir: self.build_dir.join(artifact.build_dir()),
+            apk_name,
+            assets,
+            resources,
+            dexes,
+            manifest: android_manifest,
+            disable_aapt_compression: is_debug_profile,
+            strip: self.manifest.strip,
+            reverse_port_forward: self.manifest.reverse_port_forward.clone(),
+        };
+
+        let mut apk = config.create_apk()?;
+
+        for (artifact, target, libs_search_paths) in built_libs {
             let libs_search_paths = libs_search_paths
                 .iter()
                 .map(|path| path.as_path())
                 .collect::<Vec<_>>();
-
-            apk.add_lib_recursively(&artifact, *target, libs_search_paths.as_slice())?;
-
+            apk.add_lib_recursively(&artifact, target, libs_search_paths.as_slice())?;
             if let Some(runtime_libs) = &runtime_libs {
-                apk.add_runtime_libs(runtime_libs, *target, libs_search_paths.as_slice())?;
+                apk.add_runtime_libs(runtime_libs, target, libs_search_paths.as_slice())?;
             }
         }
 

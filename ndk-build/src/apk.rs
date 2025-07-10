@@ -105,9 +105,7 @@ impl ApkConfig {
         }
 
         if !self.dexes.is_empty() {
-            // XXX: import `android-build` and use `Dexer` (D8) to add dex files into the apk,
-            // then remove `zip` dependency to reduce crate size and eliminate the annoying
-            // `zip     : warning: header mismatch` warning.
+            // TODO: try to eliminate the `zip     : warning: header mismatch` warning.
             let map_zip_err = |e: zip::result::ZipError| std::io::Error::from(e);
             let mut apk_file = fs::OpenOptions::new()
                 .read(true)
