@@ -18,4 +18,3 @@ quick-xml = { version = "0.26", features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
 thiserror = "1"
 which = "4"
-zip = "1"

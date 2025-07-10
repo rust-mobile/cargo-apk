@@ -6,10 +6,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use zip::ZipWriter;
 
 /// The options for how to treat debug symbols that are present in any `.so`
 /// files that are added to the APK.
@@ -105,26 +103,17 @@ impl ApkConfig {
         }
 
         if !self.dexes.is_empty() {
-            // TODO: try to eliminate the `zip     : warning: header mismatch` warning.
-            let map_zip_err = |e: zip::result::ZipError| std::io::Error::from(e);
-            let mut apk_file = fs::OpenOptions::new()
-                .read(true)
-                .write(true)
-                .open(self.unaligned_apk())?;
+            let mut aapt = self.build_tool(bin!("aapt"))?;
+            aapt.arg("add").arg("-k");
+            if self.disable_aapt_compression {
+                aapt.arg("-0").arg("");
+            }
+            aapt.arg(self.unaligned_apk());
             for dex_path in &self.dexes {
-                let dex_data = fs::read(dex_path)?;
-                let mut apk_zip = ZipWriter::new_append(&mut apk_file).map_err(map_zip_err)?;
-                let Some(dex_file_name) = dex_path.file_name().map(|s| s.to_string_lossy()) else {
-                    continue;
-                };
-                apk_zip
-                    .start_file(
-                        dex_file_name.as_ref(),
-                        zip::write::SimpleFileOptions::default(),
-                    )
-                    .map_err(map_zip_err)?;
-                apk_zip.write_all(&dex_data).unwrap();
-                apk_zip.finish().map_err(map_zip_err)?;
+                aapt.arg(dex_path);
+            }
+            if !aapt.status()?.success() {
+                return Err(NdkError::CmdFailed(Box::new(aapt)));
             }
         }
 
