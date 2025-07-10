@@ -100,8 +100,42 @@ impl AndroidManifest {
     }
 
     pub fn read_from(xml_file: &Path) -> Result<Self, NdkError> {
+        use quick_xml::events::{BytesEnd, BytesStart, Event};
+        use std::io::Cursor;
+
+        let alt_str = |is_first| {
+            if is_first {
+                "activity"
+            } else {
+                "other_activity"
+            }
+        };
+
         let xml = std::fs::read_to_string(xml_file)?;
-        let manifest = quick_xml::de::from_str(&xml)?;
+        let mut reader = quick_xml::Reader::from_str(&xml);
+        reader.trim_text(true); // XXX: is it needed?
+
+        let mut writer = quick_xml::Writer::new(Cursor::new(Vec::new()));
+        let mut is_first_activity = true;
+        loop {
+            match reader.read_event()? {
+                Event::Start(ref e) if e.name().as_ref() == b"activity" => {
+                    let mut new_start = BytesStart::new(alt_str(is_first_activity));
+                    new_start.extend_attributes(e.attributes().filter_map(Result::ok));
+                    writer.write_event(Event::Start(new_start))?;
+                }
+                Event::End(ref e) if e.name().as_ref() == b"activity" => {
+                    let new_end = BytesEnd::new(alt_str(is_first_activity));
+                    writer.write_event(Event::End(new_end))?;
+                    is_first_activity = false;
+                }
+                Event::Eof => break,
+                e => writer.write_event(e)?,
+            }
+        }
+        let mut buf = writer.into_inner();
+        buf.set_position(0);
+        let manifest = quick_xml::de::from_reader(buf)?;
         Ok(manifest)
     }
 }
@@ -135,7 +169,7 @@ pub struct Application {
     /// This is usually the native activity.
     #[serde(default)]
     pub activity: Activity,
-    /// Note: this is unsupported in XML deserialization.
+    /// Note: this must be handled by `AndroidManifest::read_from` for XML deserialization.
     #[serde(default)]
     #[serde(rename(serialize = "activity", deserialize = "other_activity"))]
     pub other_activities: Vec<Activity>,

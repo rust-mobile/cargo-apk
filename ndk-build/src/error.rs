@@ -48,6 +48,8 @@ pub enum NdkError {
     CmdFailed(Box<Command>),
     #[error(transparent)]
     Serialize(#[from] quick_xml::de::DeError),
+    #[error(transparent)]
+    QuickXml(#[from] quick_xml::Error),
     #[error("String `{1}` is not a UID")]
     NotAUid(#[source] ParseIntError, String),
     #[error("Could not find `package:{package}` in output `{output}`")]
