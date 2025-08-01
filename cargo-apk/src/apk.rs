@@ -176,7 +176,8 @@ impl<'a> ApkBuilder<'a> {
 
         manifest.application.activity.meta_data.push(MetaData {
             name: "android.app.lib_name".to_string(),
-            value: artifact.name.replace('-', "_"),
+            value: Some(artifact.name.replace('-', "_")),
+            resource: None,
         });
 
         let crate_path = self.cmd.manifest().parent().expect("invalid manifest path");
