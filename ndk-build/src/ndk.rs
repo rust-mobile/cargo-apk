@@ -85,8 +85,10 @@ impl Ndk {
             .max()
             .ok_or(NdkError::BuildToolsNotFound)?;
 
-        let build_tag = std::fs::read_to_string(ndk_path.join("source.properties"))
-            .expect("Failed to read source.properties");
+        let Ok(build_tag) = std::fs::read_to_string(ndk_path.join("source.properties")) else {
+            eprintln!("Failed to read source.properties. Maybe NDK is not at {:?}.", ndk_path);
+            return Err(NdkError::NdkNotFound);
+        };
 
         let build_tag = build_tag
             .split('\n')
