@@ -14,7 +14,7 @@ pub struct Ndk {
     user_home: PathBuf,
     ndk_path: PathBuf,
     build_tools_version: String,
-    build_tag: u32,
+    version: (u32, u32, u32),
     platforms: Vec<u32>,
 }
 
@@ -88,22 +88,24 @@ impl Ndk {
         let build_tag = std::fs::read_to_string(ndk_path.join("source.properties"))
             .expect("Failed to read source.properties");
 
-        let build_tag = build_tag
+        let version = build_tag
             .split('\n')
             .find_map(|line| {
                 let (key, value) = line
-                    .split_once('=')
+                    .split_once(" = ")
                     .expect("Failed to parse `key = value` from source.properties");
-                if key.trim() == "Pkg.Revision" {
-                    // AOSP writes a constantly-incrementing build version to the patch field.
-                    // This number is incrementing across NDK releases.
-                    let mut parts = value.trim().split('.');
-                    let _major = parts.next().unwrap();
-                    let _minor = parts.next().unwrap();
-                    let patch = parts.next().unwrap();
+                if key == "Pkg.Revision" {
+                    let mut p = value.split('.');
+                    let major = p.next().unwrap().parse().expect("Parse major field");
+                    let minor = p.next().unwrap().parse().expect("Parse minor field");
+                    let patch = p.next().unwrap();
                     // Can have an optional `XXX-beta1`
                     let patch = patch.split_once('-').map_or(patch, |(patch, _beta)| patch);
-                    Some(patch.parse().expect("Failed to parse patch field"))
+                    Some((
+                        major,
+                        minor,
+                        patch.parse().expect("Failed to parse patch field"),
+                    ))
                 } else {
                     None
                 }
@@ -145,7 +147,7 @@ impl Ndk {
             user_home,
             ndk_path,
             build_tools_version,
-            build_tag,
+            version,
             platforms,
         })
     }
@@ -162,8 +164,10 @@ impl Ndk {
         &self.build_tools_version
     }
 
-    pub fn build_tag(&self) -> u32 {
-        self.build_tag
+    // WARNING: NDK build tags don't need to be sequential.  For example the build tag of NDK r27d
+    // `27.3.13750724` is ahead of the first r28 release at `28.0.1243356`.
+    pub fn version(&self) -> (u32, u32, u32) {
+        self.version
     }
 
     pub fn platforms(&self) -> &[u32] {
