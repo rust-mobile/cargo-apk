@@ -69,6 +69,13 @@ pub fn cargo_ndk(
     rustflags.push_str("-Clink-arg=");
     rustflags.push_str(&clang_target);
 
+    if ndk.version().0 < 28 {
+        // Link with 16KiB alignment. This is the default since NDK r28:
+        // https://developer.android.com/guide/practices/page-sizes#compile-r28
+        rustflags.push_str(SEP);
+        rustflags.push_str("-Clink-arg=-Wl,-z,max-page-size=16384");
+    }
+
     let ar = ndk.toolchain_bin("ar", target)?;
     cargo.env(format!("AR_{triple}"), &ar);
     cargo.env(cargo_env_target_cfg("AR", triple), &ar);
@@ -79,7 +86,7 @@ pub fn cargo_ndk(
     // See https://github.com/rust-lang/rust/pull/85806 for a discussion on why libgcc
     // is still required even after replacing it with libunwind in the source.
     // XXX: Add an upper-bound on the Rust version whenever this is not necessary anymore.
-    if ndk.build_tag() > 7272597 {
+    if ndk.version().2 > 7272597 {
         let cargo_apk_link_dir = target_dir
             .as_ref()
             .join("cargo-apk-temp-extra-link-libraries");

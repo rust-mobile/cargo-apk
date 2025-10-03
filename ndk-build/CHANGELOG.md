@@ -1,5 +1,7 @@
 # Unreleased
 
+- Link and `zipalign` all libraries with 16KiB alignment for Android 15+. ([#76](https://github.com/rust-mobile/cargo-apk/pull/76))
+
 # 0.10.0 (2023-11-30)
 
 - Add `android:extractNativeLibs`, `android:usesCleartextTraffic` attributes to the manifest's `Application` element, and `android:alwaysRetainTaskState` to the `Activity` element. ([#15](https://github.com/rust-mobile/cargo-apk/pull/15))
