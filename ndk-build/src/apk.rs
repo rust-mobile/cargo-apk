@@ -200,6 +200,8 @@ impl<'a> UnalignedApk<'a> {
         let mut aapt = self.config.build_tool(bin!("aapt"))?;
         aapt.arg("add");
 
+        // TODO: We might want to disable library compression separately, which allows them to be
+        // mmap'ed without decompression step after installation.
         if self.config.disable_aapt_compression {
             aapt.arg("-0").arg("");
         }
@@ -218,6 +220,9 @@ impl<'a> UnalignedApk<'a> {
         zipalign
             .arg("-f")
             .arg("-v")
+            // Force all uncompressed libraries to be 16KiB-aligned for Android 15+
+            // TODO: This requires build-tools 35.0.0
+            .args(["-P", "16"])
             .arg("4")
             .arg(self.config.unaligned_apk())
             .arg(self.config.apk());
