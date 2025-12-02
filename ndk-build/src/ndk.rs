@@ -133,11 +133,22 @@ impl Ndk {
                 name.strip_prefix("android-")
                     .and_then(|api| api.parse::<u32>().ok())
             })
-            .filter(|level| (min_platform_level..=max_platform_level).contains(level))
             .collect();
 
         if platforms.is_empty() {
             return Err(NdkError::NoPlatformFound);
+        }
+
+        let platforms: Vec<u32> = platforms
+            .into_iter()
+            .filter(|level| (min_platform_level..=max_platform_level).contains(level))
+            .collect();
+
+        if platforms.is_empty() {
+            return Err(NdkError::NoPlatformInRange(
+                min_platform_level,
+                max_platform_level,
+            ));
         }
 
         Ok(Self {
