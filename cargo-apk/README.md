@@ -29,23 +29,7 @@ $ cargo install --path cargo-apk/
 
 ## Crate configuration
 
-Android and thus `cargo-apk` require the [Cargo Target] to be a Shared Library, corresponding to Rust's `cdylib` `crate-type`.  For the sole library in a crate, configure this as follows in `Cargo.toml`:
-
-```toml
-[lib]
-# Optionally supports a different library location using `path = "..."`
-crate-type = ["cdylib"]
-```
-
-Example targets must be identified by their `name` or `path` in the list of `example`s:
-
-```toml
-[[example]]
-name = "example_name" # Matching the filename in `examples/example_name.rs`, unless specified otherwise with `path = "..."`
-crate-type = ["cdylib"]
-```
-
-[Cargo Target]: https://doc.rust-lang.org/cargo/reference/cargo-targets.html
+Crate specific configuration is no longer required, you can just build it out of the box. Old configurations explicitly declaring the `crate-type` can be removed. 
 
 ## Commands
 
@@ -57,7 +41,7 @@ Invoke `cargo apk help` for a more detailed overview of all available commands a
 
 ### Target selection
 
-Like `cargo`, the above subcommands from `cargo apk` support selecting the target to build and/or run using `--package`/`-p` (which picks the library target inside the crate) or `--example`, as long as the Cargo Target is a `cdylib` as described above.
+Like `cargo`, the above subcommands from `cargo apk` support selecting the target to build and/or run using `--package`/`-p` (which picks the library target inside the crate) or `--example`.
 
 ## Manifest
 
