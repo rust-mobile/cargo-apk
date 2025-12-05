@@ -12,15 +12,3 @@ ndk = { version = "0.9", features = ["api-level-23"] }
 ndk-context = "0.1.1"
 android_logger = "0.15"
 android-activity = { version = "0.6", features = ["native-activity"] }
-
-[[example]]
-name = "hello_world"
-crate-type = ["cdylib"]
-
-[[example]]
-name = "jni_audio"
-crate-type = ["cdylib"]
-
-[[example]]
-name = "looper"
-crate-type = ["cdylib"]
