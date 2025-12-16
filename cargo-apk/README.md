@@ -203,6 +203,12 @@ extract_native_libs = true
 # See https://developer.android.com/guide/topics/manifest/application-element#usesCleartextTraffic
 uses_cleartext_traffic = true
 
+# See https://developer.android.com/guide/topics/manifest/application-element#allowNativeHeapPointerTagging
+allow_native_heap_pointer_tagging = true
+
+# See https://developer.android.com/guide/topics/manifest/application-element#requestLegacyExternalStorage
+request_legacy_external_storage = true
+
 # See https://developer.android.com/guide/topics/manifest/meta-data-element
 #
 # Note: there can be several .meta_data entries.
