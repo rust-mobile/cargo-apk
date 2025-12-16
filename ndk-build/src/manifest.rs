@@ -79,6 +79,10 @@ pub struct Application {
     pub label: String,
     #[serde(rename(serialize = "android:extractNativeLibs"))]
     pub extract_native_libs: Option<bool>,
+    #[serde(rename(serialize = "android:allowNativeHeapPointerTagging"))]
+    pub allow_native_heap_pointer_tagging: Option<bool>,
+    #[serde(rename(serialize = "android:requestLegacyExternalStorage"))]
+    pub request_legacy_external_storage: Option<bool>,
     #[serde(rename(serialize = "android:usesCleartextTraffic"))]
     pub uses_cleartext_traffic: Option<bool>,
 
