@@ -81,6 +81,9 @@ pub struct Application {
     pub extract_native_libs: Option<bool>,
     #[serde(rename(serialize = "android:usesCleartextTraffic"))]
     pub uses_cleartext_traffic: Option<bool>,
+    #[serde(rename(serialize = "uses-native-library"))]
+    #[serde(default)]
+    pub uses_native_library: Vec<NativeLibrary>,
 
     #[serde(rename(serialize = "meta-data"))]
     #[serde(default)]
@@ -270,6 +273,20 @@ pub struct Permission {
     pub name: String,
     #[serde(rename(serialize = "android:maxSdkVersion"))]
     pub max_sdk_version: Option<u32>,
+}
+
+/// Android [uses-permission element](https://developer.android.com/guide/topics/manifest/uses-permission-element).
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct NativeLibrary {
+    #[serde(rename(serialize = "android:name"))]
+    pub name: String,
+    #[serde(rename(serialize = "android:required"))]
+    #[serde(default = "default_required")]
+    pub required: bool,
+}
+
+fn default_required() -> bool {
+    true
 }
 
 /// Android [package element](https://developer.android.com/guide/topics/manifest/queries-element#package).
