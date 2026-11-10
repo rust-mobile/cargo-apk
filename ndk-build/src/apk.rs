@@ -65,7 +65,7 @@ impl ApkConfig {
         self.build_dir.join(format!("{}.apk", self.apk_name))
     }
 
-    pub fn create_apk(&self) -> Result<UnalignedApk, NdkError> {
+    pub fn create_apk(&self) -> Result<UnalignedApk<'_>, NdkError> {
         std::fs::create_dir_all(&self.build_dir)?;
         self.manifest.write_to(&self.build_dir)?;
 
@@ -240,7 +240,7 @@ impl<'a> UnsignedApk<'a> {
             .arg("--ks")
             .arg(&key.path)
             .arg("--ks-pass")
-            .arg(format!("pass:{}", &key.password))
+            .arg(format!("pass:{}", key.password))
             .arg(self.0.apk());
         if !apksigner.status()?.success() {
             return Err(NdkError::CmdFailed(Box::new(apksigner)));
