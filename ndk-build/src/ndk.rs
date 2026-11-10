@@ -206,12 +206,12 @@ impl Ndk {
         self.platforms().iter().max().cloned().unwrap()
     }
 
-    /// Returns platform `35` as currently [required by Google Play], or lower
+    /// Returns platform `36` as currently [required by Google Play], or lower
     /// when the detected SDK does not support it yet.
     ///
     /// [required by Google Play]: https://developer.android.com/distribute/best-practices/develop/target-sdk
     pub fn default_target_platform(&self) -> u32 {
-        self.highest_supported_platform().min(35)
+        self.highest_supported_platform().min(36)
     }
 
     pub fn platform_dir(&self, platform: u32) -> Result<PathBuf, NdkError> {
