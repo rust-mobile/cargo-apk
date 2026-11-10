@@ -1,6 +1,6 @@
 # Unreleased
 
-- **Breaking:** Default `target_sdk_version` to `35` (if installed), matching Google Play requirements starting August 31 2025.
+- **Breaking:** Default `target_sdk_version` to `36` (if installed), matching Google Play requirements starting August 31 2026.
 
 # 0.10.0 (2023-11-30)
 

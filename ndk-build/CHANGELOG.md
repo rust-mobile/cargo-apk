@@ -1,5 +1,6 @@
 # Unreleased
 
+- **Breaking:** `Ndk::default_target_platform()` now returns `36` (if installed), matching Google Play requirements starting August 31 2026.
 - Link and `zipalign` all libraries with 16KiB alignment for Android 15+. ([#76](https://github.com/rust-mobile/cargo-apk/pull/76))
 
 # 0.10.0 (2023-11-30)
