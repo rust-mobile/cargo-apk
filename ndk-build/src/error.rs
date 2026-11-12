@@ -32,6 +32,8 @@ pub enum NdkError {
     BuildToolsNotFound,
     #[error("Android SDK has no platforms installed.")]
     NoPlatformFound,
+    #[error("Android SDK has no platforms installed between level {0} and {1}.")]
+    NoPlatformInRange(u32, u32),
     #[error("Platform `{0}` is not installed.")]
     PlatformNotFound(u32),
     #[error("Target is not supported.")]
