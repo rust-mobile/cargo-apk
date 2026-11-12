@@ -214,6 +214,13 @@ value = "vr_only"
 # See https://developer.android.com/guide/topics/manifest/activity-element
 [package.metadata.android.application.activity]
 
+# See https://developer.android.com/guide/topics/manifest/uses-native-library-element
+#
+# Note: there can be multiple .uses_native_library entries.
+[[package.metadata.android.application.uses_native_library]]
+name = "libOpenCL.so"
+required = false
+
 # See https://developer.android.com/guide/topics/manifest/activity-element#config
 #
 # Defaults to "orientation|keyboardHidden|screenSize".
