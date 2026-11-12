@@ -82,11 +82,13 @@ jobs:
     name: hello_world example on emulator
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         source_os: [local, windows-latest, macos-latest]
     env:
-      api-level: 29
+      api-level: 35
       emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
       arch: x86_64
       # the `googleapis` emulator target is considerably slower on CI.
@@ -118,7 +120,7 @@ jobs:
           rustup target add x86_64-linux-android
 
       - name: AVD cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
