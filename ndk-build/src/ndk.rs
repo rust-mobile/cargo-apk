@@ -130,8 +130,25 @@ impl Ndk {
             .filter(|path| path.path().is_dir())
             .filter_map(|path| path.file_name().into_string().ok())
             .filter_map(|name| {
-                name.strip_prefix("android-")
-                    .and_then(|api| api.parse::<u32>().ok())
+                let mut version = name
+                    .strip_prefix("android-")
+                    .expect("Invalid platform name");
+                if let Some((_v, ext)) = version.split_once("-ext") {
+                    // version = v;
+                    let _ext_version = ext.parse::<u32>();
+                    eprintln!("Skipping platform SDK with extensions `{name}`");
+                    return None;
+                }
+                if let Some((v, minor_version)) = version.split_once('.') {
+                    let _minor_version = minor_version.parse::<u32>();
+                    eprintln!("Ignoring minor suffix on SDK version `{version}`");
+                    version = v;
+                }
+                Some(
+                    version
+                        .parse::<u32>()
+                        .expect("Invalid platform SDK version"),
+                )
             })
             .filter(|level| (min_platform_level..=max_platform_level).contains(level))
             .collect();
@@ -214,6 +231,8 @@ impl Ndk {
         let dir = self
             .sdk_path
             .join("platforms")
+            // TODO: If selected/used by Self::highest_supported_platform(),
+            // append the minor suffix
             .join(format!("android-{platform}"));
         if !dir.exists() {
             return Err(NdkError::PlatformNotFound(platform));
