@@ -9,6 +9,7 @@ pub fn cargo_ndk(
     target: Target,
     sdk_version: u32,
     target_dir: impl AsRef<Path>,
+    hacky_bins: bool,
 ) -> Result<Command, NdkError> {
     let triple = target.rust_triple();
     let clang_target = format!("--target={}{}", target.ndk_llvm_triple(), sdk_version);
@@ -103,6 +104,13 @@ pub fn cargo_ndk(
                 .to_str()
                 .expect("Target dir must be valid UTF-8"),
         );
+    }
+
+    if hacky_bins {
+        rustflags.push_str(SEP);
+        rustflags.push_str("-Clink-arg=-shared");
+        rustflags.push_str(SEP);
+        rustflags.push_str("-Clink-arg=-no-pie");
     }
 
     cargo.env("CARGO_ENCODED_RUSTFLAGS", rustflags);

@@ -143,6 +143,7 @@ impl<'a> ApkBuilder<'a> {
                 *target,
                 self.min_sdk_version(),
                 self.cmd.target_dir(),
+                self.manifest.hacky_bins,
             )?;
             cargo.arg("check");
             if self.cmd.target().is_none() {
@@ -220,13 +221,29 @@ impl<'a> ApkBuilder<'a> {
         for target in &self.build_targets {
             let triple = target.rust_triple();
             let build_dir = self.cmd.build_dir(Some(triple));
-            let artifact = self.cmd.artifact(artifact, Some(triple), CrateType::Cdylib);
+            let lib = self.cmd.artifact(artifact, Some(triple), CrateType::Cdylib);
+
+            if self.manifest.hacky_bins {
+                let actual_bin = self.cmd.artifact(artifact, Some(triple), CrateType::Bin);
+                #[cfg(unix)]
+                {
+                    if let Err(err) = std::fs::remove_file(&lib) {
+                        if err.kind() != std::io::ErrorKind::NotFound {
+                            return Err(err.into());
+                        }
+                    }
+                    std::os::unix::fs::symlink(actual_bin, &lib)?;
+                }
+                #[cfg(not(unix))]
+                std::fs::copy(actual_bin, &lib)?;
+            }
 
             let mut cargo = cargo_ndk(
                 &self.ndk,
                 *target,
                 self.min_sdk_version(),
                 self.cmd.target_dir(),
+                self.manifest.hacky_bins,
             )?;
             cargo.arg("build");
             if self.cmd.target().is_none() {
@@ -247,7 +264,7 @@ impl<'a> ApkBuilder<'a> {
                 .map(|path| path.as_path())
                 .collect::<Vec<_>>();
 
-            apk.add_lib_recursively(&artifact, *target, libs_search_paths.as_slice())?;
+            apk.add_lib_recursively(&lib, *target, libs_search_paths.as_slice())?;
 
             if let Some(runtime_libs) = &runtime_libs {
                 apk.add_runtime_libs(runtime_libs, *target, libs_search_paths.as_slice())?;
@@ -347,6 +364,7 @@ impl<'a> ApkBuilder<'a> {
                 *target,
                 self.min_sdk_version(),
                 self.cmd.target_dir(),
+                self.manifest.hacky_bins,
             )?;
             cargo.arg(cargo_cmd);
             self.cmd.args().apply(&mut cargo);

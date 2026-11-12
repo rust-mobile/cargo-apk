@@ -27,6 +27,7 @@ pub(crate) struct Manifest {
     pub(crate) signing: HashMap<String, Signing>,
     pub(crate) reverse_port_forward: HashMap<String, String>,
     pub(crate) strip: StripConfig,
+    pub(crate) hacky_bins: bool,
 }
 
 impl Manifest {
@@ -53,6 +54,7 @@ impl Manifest {
             signing: metadata.signing,
             reverse_port_forward: metadata.reverse_port_forward,
             strip: metadata.strip,
+            hacky_bins: metadata.hacky_bins,
         })
     }
 }
@@ -111,6 +113,8 @@ struct AndroidMetadata {
     reverse_port_forward: HashMap<String, String>,
     #[serde(default)]
     strip: StripConfig,
+    #[serde(default)]
+    hacky_bins: bool,
 }
 
 #[derive(Clone, Debug, Default, Deserialize)]
