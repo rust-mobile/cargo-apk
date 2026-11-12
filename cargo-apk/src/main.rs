@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use cargo_apk::{ApkBuilder, Error};
-use cargo_subcommand::Subcommand;
+use cargo_subcommand::{ArtifactType, Subcommand};
 use clap::{CommandFactory, FromArgMatches, Parser};
 
 #[derive(Parser)]
@@ -152,7 +152,7 @@ fn main() -> anyhow::Result<()> {
         ApkSubCmd::Build { args } => {
             let cmd = Subcommand::new(args.subcommand_args)?;
             let builder = ApkBuilder::from_subcommand(&cmd, args.device)?;
-            for artifact in cmd.artifacts() {
+            for artifact in cmd.artifacts().filter(|a| a.r#type == ArtifactType::Lib) {
                 builder.build(artifact)?;
             }
         }
