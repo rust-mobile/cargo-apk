@@ -8,6 +8,7 @@ use ndk_build::error::NdkError;
 use ndk_build::manifest::{IntentFilter, MetaData};
 use ndk_build::ndk::{Key, Ndk};
 use ndk_build::target::Target;
+use std::fs;
 use std::path::PathBuf;
 
 pub struct ApkBuilder<'a> {
@@ -183,21 +184,16 @@ impl<'a> ApkBuilder<'a> {
 
         let is_debug_profile = *self.cmd.profile() == Profile::Dev;
 
-        let assets = self
-            .manifest
-            .assets
-            .as_ref()
-            .map(|assets| dunce::simplified(&crate_path.join(assets)).to_owned());
-        let resources = self
-            .manifest
-            .resources
-            .as_ref()
-            .map(|res| dunce::simplified(&crate_path.join(res)).to_owned());
-        let runtime_libs = self
-            .manifest
-            .runtime_libs
-            .as_ref()
-            .map(|libs| dunce::simplified(&crate_path.join(libs)).to_owned());
+        let assets = self.manifest.assets.as_ref().map(|assets| {
+            fs::canonicalize(&assets)
+                .unwrap_or(dunce::simplified(&crate_path.join(assets)).to_owned())
+        });
+        let resources = self.manifest.resources.as_ref().map(|res| {
+            fs::canonicalize(&res).unwrap_or(dunce::simplified(&crate_path.join(res)).to_owned())
+        });
+        let runtime_libs = self.manifest.runtime_libs.as_ref().map(|libs| {
+            fs::canonicalize(libs).unwrap_or(dunce::simplified(&crate_path.join(libs)).to_owned())
+        });
         let apk_name = self
             .manifest
             .apk_name
