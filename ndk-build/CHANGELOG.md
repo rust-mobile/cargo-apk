@@ -1,5 +1,7 @@
 # Unreleased
 
+- Add `android:installLocation` attribute to the manifest's root.
+
 # 0.10.0 (2023-11-30)
 
 - Add `android:extractNativeLibs`, `android:usesCleartextTraffic` attributes to the manifest's `Application` element, and `android:alwaysRetainTaskState` to the `Activity` element. ([#15](https://github.com/rust-mobile/cargo-apk/pull/15))
